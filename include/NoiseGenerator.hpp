@@ -129,7 +129,7 @@ namespace StealthWorldGenerator {
                     int scaledX = 0;
                     for (int i = 0; i < internalWidth - 1; ++i) {
                         // 1D noise
-                        fillLine(i, scaledX, &internalNoise, &generatedNoise, &kernel);
+                        fillLine(i, scaledX, internalNoise, generatedNoise, kernel);
                         scaledX += scale;
                     }
                 } else if constexpr (internalHeight == 1) {
@@ -139,7 +139,7 @@ namespace StealthWorldGenerator {
                         scaledX = 0;
                         for (int i = 0; i < internalWidth - 1; ++i) {
                             // 2D noise
-                            fillSquare(i, j, scaledX, scaledY, &internalNoise, &generatedNoise, &kernel);
+                            fillSquare(i, j, scaledX, scaledY, internalNoise, generatedNoise, kernel);
                             scaledX += scale;
                         }
                         scaledY += scale;
@@ -150,41 +150,41 @@ namespace StealthWorldGenerator {
             }
 
             template <int scale, int internalWidth, int width>
-            constexpr void fillLine(int internalX, int scaledX, const StealthTileMap::TileMapF<internalWidth>* internalNoise,
-                StealthTileMap::TileMapF<width>* generatedNoise, const InterpolationKernel<scale>* kernel) {
+            constexpr void fillLine(int internalX, int scaledX, const StealthTileMap::TileMapF<internalWidth>& internalNoise,
+                StealthTileMap::TileMapF<width>& generatedNoise, const InterpolationKernel<scale>& kernel) {
                 // Only fill the part of the length that is valid.
                 const int maxValidX = std::min(width - scaledX, scale);
                 // Cache local gradient vectors
-                float left = internalNoise -> operator()(internalX);
-                float right = internalNoise -> operator()(internalX + 1);
+                float left = internalNoise(internalX);
+                float right = internalNoise(internalX + 1);
                 // Cache points and attenuations TileMaps
-                const auto& attenuations = kernel -> getAttenuations();
+                const auto& attenuations = kernel.getAttenuations();
                 // Loop over one interpolation kernel tile.
                 for (int i = 0; i < maxValidX; ++i) {
                     // Interpolate based on the 4 surrounding internal noise points.
-                    generatedNoise -> operator()(scaledX + i) = interpolate1D(left, right, attenuations(i));
+                    generatedNoise(scaledX + i) = interpolate1D(left, right, attenuations(i));
                 }
             }
 
             template <int scale, int internalWidth, int internalLength, int width, int length>
             constexpr void fillSquare(int internalX, int internalY, int scaledX, int scaledY,
-                const StealthTileMap::TileMapF<internalWidth, internalLength>* internalNoise,
-                StealthTileMap::TileMapF<width, length>* generatedNoise, const InterpolationKernel<scale>* kernel) {
+                const StealthTileMap::TileMapF<internalWidth, internalLength>& internalNoise,
+                StealthTileMap::TileMapF<width, length>& generatedNoise, const InterpolationKernel<scale>& kernel) {
                 // Only fill the part of the tile that is valid.
                 const int maxValidX = std::min(width - scaledX, scale);
                 const int maxValidY = std::min(length - scaledY, scale);
                 // Cache local gradient vectors
-                float topLeft = internalNoise -> operator()(internalX, internalY);
-                float topRight = internalNoise -> operator()(internalX + 1, internalY);
-                float bottomLeft = internalNoise -> operator()(internalX, internalY + 1);
-                float bottomRight = internalNoise -> operator()(internalX + 1, internalY + 1);
+                float topLeft = internalNoise(internalX, internalY);
+                float topRight = internalNoise(internalX + 1, internalY);
+                float bottomLeft = internalNoise(internalX, internalY + 1);
+                float bottomRight = internalNoise(internalX + 1, internalY + 1);
                 // Cache points and attenuations TileMaps
-                const auto& attenuations = kernel -> getAttenuations();
+                const auto& attenuations = kernel.getAttenuations();
                 // Loop over one interpolation kernel tile.
                 for (int j = 0; j < maxValidY; ++j) {
                     for (int i = 0; i < maxValidX; ++i) {
                         // Interpolate based on the 4 surrounding internal noise points.
-                        generatedNoise -> operator()(scaledX + i, scaledY + j) = interpolate2D(topLeft,
+                        generatedNoise(scaledX + i, scaledY + j) = interpolate2D(topLeft,
                             topRight, bottomLeft, bottomRight, attenuations(i), attenuations(j));
                     }
                 }
