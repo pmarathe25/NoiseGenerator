@@ -126,23 +126,23 @@ namespace StealthWorldGenerator {
                 // Loop over the internal noise map and fill sections in between
                 if constexpr (internalLength == 1 && internalHeight == 1) {
                     // 1D noise map
-                    int scaledX = 0;
+                    int fillStartX = 0;
                     for (int i = 0; i < internalWidth - 1; ++i) {
                         // 1D noise
-                        fillLine(i, scaledX, internalNoise, generatedNoise, kernel);
-                        scaledX += scale;
+                        fillLine(i, fillStartX, internalNoise, generatedNoise, kernel);
+                        fillStartX += scale;
                     }
                 } else if constexpr (internalHeight == 1) {
                     // 2D noise map
-                    int scaledX = 0, scaledY = 0;
+                    int fillStartX = 0, fillStartY = 0;
                     for (int j = 0; j < internalLength - 1; ++j) {
-                        scaledX = 0;
+                        fillStartX = 0;
                         for (int i = 0; i < internalWidth - 1; ++i) {
                             // 2D noise
-                            fillSquare(i, j, scaledX, scaledY, internalNoise, generatedNoise, kernel);
-                            scaledX += scale;
+                            fillSquare(i, j, fillStartX, fillStartY, internalNoise, generatedNoise, kernel);
+                            fillStartX += scale;
                         }
-                        scaledY += scale;
+                        fillStartY += scale;
                     }
                 } else {
                     // 3D noise map
@@ -150,10 +150,10 @@ namespace StealthWorldGenerator {
             }
 
             template <int scale, int internalWidth, int width>
-            constexpr void fillLine(int internalX, int scaledX, const StealthTileMap::TileMapF<internalWidth>& internalNoise,
+            constexpr void fillLine(int internalX, int fillStartX, const StealthTileMap::TileMapF<internalWidth>& internalNoise,
                 StealthTileMap::TileMapF<width>& generatedNoise, const InterpolationKernel<scale>& kernel) {
                 // Only fill the part of the length that is valid.
-                const int maxValidX = std::min(width - scaledX, scale);
+                const int maxValidX = std::min(width - fillStartX, scale);
                 // Cache local gradient vectors
                 float left = internalNoise(internalX);
                 float right = internalNoise(internalX + 1);
@@ -162,17 +162,17 @@ namespace StealthWorldGenerator {
                 // Loop over one interpolation kernel tile.
                 for (int i = 0; i < maxValidX; ++i) {
                     // Interpolate based on the 4 surrounding internal noise points.
-                    generatedNoise(scaledX + i) = interpolate1D(left, right, attenuations(i));
+                    generatedNoise(fillStartX + i) = interpolate1D(left, right, attenuations(i));
                 }
             }
 
             template <int scale, int internalWidth, int internalLength, int width, int length>
-            constexpr void fillSquare(int internalX, int internalY, int scaledX, int scaledY,
+            constexpr void fillSquare(int internalX, int internalY, int fillStartX, int fillStartY,
                 const StealthTileMap::TileMapF<internalWidth, internalLength>& internalNoise,
                 StealthTileMap::TileMapF<width, length>& generatedNoise, const InterpolationKernel<scale>& kernel) {
                 // Only fill the part of the tile that is valid.
-                const int maxValidX = std::min(width - scaledX, scale);
-                const int maxValidY = std::min(length - scaledY, scale);
+                const int maxValidX = std::min(width - fillStartX, scale);
+                const int maxValidY = std::min(length - fillStartY, scale);
                 // Cache local gradient vectors
                 float topLeft = internalNoise(internalX, internalY);
                 float topRight = internalNoise(internalX + 1, internalY);
@@ -184,7 +184,7 @@ namespace StealthWorldGenerator {
                 for (int j = 0; j < maxValidY; ++j) {
                     for (int i = 0; i < maxValidX; ++i) {
                         // Interpolate based on the 4 surrounding internal noise points.
-                        generatedNoise(scaledX + i, scaledY + j) = interpolate2D(topLeft,
+                        generatedNoise(fillStartX + i, fillStartY + j) = interpolate2D(topLeft,
                             topRight, bottomLeft, bottomRight, attenuations(i), attenuations(j));
                     }
                 }
