@@ -15,6 +15,10 @@ namespace StealthWorldGenerator {
     }
     class NoiseGenerator {
         public:
+            constexpr float findDecayFactor(float multiplier) {
+                // Treat as an infinite geometric sum where multiplier = alpha and decayFactor = r
+                return (1.0f - multiplier <= 0.0f) ? 0.0001f : 1.0f - multiplier;
+            }
             // Create octaved noise
             template <int scale, int numOctaves = 8, int width = 1, int length = 1, int height = 1,
                 typename Distribution = std::uniform_real_distribution<float>, typename Generator = std::default_random_engine>
@@ -36,9 +40,7 @@ namespace StealthWorldGenerator {
             constexpr StealthTileMap::TileMapF<width, length, height> generateOctaves(Distribution distribution = std::uniform_real_distribution(0.0f, 1.0f),
                 Generator generator = std::default_random_engine(CURRENT_TIME), float multiplier = 0.5f) {
                 // Automatically determine decayFactor if it is not provided
-                // Treat as an infinite geometric sum where multiplier = alpha and decayFactor = r
-                float decayFactor = (1.0f - multiplier <= 0.0f) ? 0.0001f : 1.0f - multiplier;
-                return generateOctaves<scale, numOctaves, width, length, height>(distribution, generator, multiplier, decayFactor);
+                return generateOctaves<scale, numOctaves, width, length, height>(distribution, generator, multiplier, findDecayFactor(multiplier));
             }
 
             template <int scale, int numOctaves = 8, int width = 1, int length = 1, int height = 1>
@@ -49,9 +51,8 @@ namespace StealthWorldGenerator {
 
             template <int scale, int numOctaves = 8, int width = 1, int length = 1, int height = 1>
             constexpr StealthTileMap::TileMapF<width, length, height> generateOctaves(float multiplier) {
-                float decayFactor = (1.0f - multiplier <= 0.0f) ? 0.0001f : 1.0f - multiplier;
                 return generateOctaves<scale, numOctaves, width, length, height>(std::uniform_real_distribution(0.0f, 1.0f),
-                    std::default_random_engine(CURRENT_TIME), multiplier, decayFactor);
+                    std::default_random_engine(CURRENT_TIME), multiplier, findDecayFactor(multiplier));
             }
 
             // Create the smoothed noise
