@@ -1,27 +1,25 @@
 #ifndef NOISE_GENERATOR_H
 #define NOISE_GENERATOR_H
 #define CURRENT_TIME std::chrono::system_clock::now().time_since_epoch().count()
-#include "config.hpp"
 #include "InterpolationKernel.hpp"
 #include "TileMap/TileMap.hpp"
 #include <stealthutil>
 #include <unordered_map>
 #include <chrono>
 #include <random>
-#include <thread>
 
 namespace StealthWorldGenerator {
     namespace {
         // Maintain a cache of interpolation kernels of different sizes
-        std::unordered_map<int, std::unique_ptr<const InterpolationKernelBase>> kernels{};
+        static inline std::unordered_map<int, std::unique_ptr<const InterpolationKernelBase>> kernels{};
     }
     class NoiseGenerator {
         public:
             // Create octaved noise
             template <int width, int length = 1, int height = 1, int scale = 1, int numOctaves = 8,
                 typename Distribution = std::uniform_real_distribution<float>, typename Generator = std::default_random_engine>
-            constexpr StealthTileMap::TileMapF<width, length, height> generateOctaves(Distribution distribution = std::uniform_real_distribution(0.0f, 1.0f),
-                Generator generator = std::default_random_engine(CURRENT_TIME), float multiplier = 0.5f, float decayFactor = 0.5f) {
+            constexpr StealthTileMap::TileMapF<width, length, height> generateOctaves(Distribution distribution,
+                Generator generator, float multiplier, float decayFactor) {
                 if constexpr (numOctaves == 1) {
                     // This multiplier should equal the last one if this is the final octave.
                     return (multiplier / decayFactor) * generate<width, length, height, scale>(distribution, generator);
@@ -30,6 +28,30 @@ namespace StealthWorldGenerator {
                         + generateOctaves<width, length, height, ceilDivide(scale, 2), numOctaves - 1>(distribution,
                         generator, multiplier * decayFactor, decayFactor);
                 }
+            }
+
+            // Overloads for octaved noise
+            template <int width, int length = 1, int height = 1, int scale = 1, int numOctaves = 8,
+                typename Distribution = std::uniform_real_distribution<float>, typename Generator = std::default_random_engine>
+            constexpr StealthTileMap::TileMapF<width, length, height> generateOctaves(Distribution distribution = std::uniform_real_distribution(0.0f, 1.0f),
+                Generator generator = std::default_random_engine(CURRENT_TIME), float multiplier = 0.5f) {
+                // Automatically determine decayFactor if it is not provided
+                // Treat as an infinite geometric sum where multiplier = alpha and decayFactor = r
+                float decayFactor = (1.0f - multiplier <= 0.0f) ? 0.0001f : 1.0f - multiplier;
+                return generateOctaves<width, length, height, scale, numOctaves>(distribution, generator, multiplier, decayFactor);
+            }
+
+            template <int width, int length = 1, int height = 1, int scale = 1, int numOctaves = 8>
+            constexpr StealthTileMap::TileMapF<width, length, height> generateOctaves(float multiplier, float decayFactor) {
+                return generateOctaves<width, length, height, scale, numOctaves>(std::uniform_real_distribution(0.0f, 1.0f),
+                    std::default_random_engine(CURRENT_TIME), multiplier, decayFactor);
+            }
+
+            template <int width, int length = 1, int height = 1, int scale = 1, int numOctaves = 8>
+            constexpr StealthTileMap::TileMapF<width, length, height> generateOctaves(float multiplier) {
+                float decayFactor = (1.0f - multiplier <= 0.0f) ? 0.0001f : 1.0f - multiplier;
+                return generateOctaves<width, length, height, scale, numOctaves>(std::uniform_real_distribution(0.0f, 1.0f),
+                    std::default_random_engine(CURRENT_TIME), multiplier, decayFactor);
             }
 
             // Create the smoothed noise
