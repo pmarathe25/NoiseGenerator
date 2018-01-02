@@ -42,7 +42,7 @@ int main() {
     while (window.isOpen()) {
         auto start = std::chrono::steady_clock::now();
 
-        auto noise = noiseGenerator.generateOctaves<WINDOW_X, WINDOW_Y, 1, 400, 10>();
+        auto noise = noiseGenerator.generateOctaves<400, 10, WINDOW_X, WINDOW_Y>();
         // auto noise = noiseGenerator.generateOctaves<WINDOW_X, 1, 1, 400, 8>();
 
         // noise = (noise < noise2) + (noise > noise2); // Should be all 1s (white)
