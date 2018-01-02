@@ -1,3 +1,3 @@
 #!/bin/bash
 DIR="$(dirname "$(readlink -f "$0")")"
-sudo ln -s $DIR/include/ /usr/local/include/NoiseGenerator
+sudo ln -snf $DIR/include /usr/local/include/NoiseGenerator
