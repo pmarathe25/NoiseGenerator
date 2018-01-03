@@ -21,7 +21,7 @@ $(BUILDDIR)/noiseTest.o: $(TESTDIR)/noiseTest.cpp $(HEADERS)
 	$(CXX) $(CFLAGS) $(TESTDIR)/noiseTest.cpp -o $(BUILDDIR)/noiseTest.o
 
 clean:
-	rm $(OBJS) $(TESTOBJS) $(TESTDIR)/terrainTest
+	rm $(OBJS) $(TESTOBJS) $(TESTDIR)/noiseTest
 
 test: $(TESTDIR)/noiseTest
 	$(TESTDIR)/noiseTest

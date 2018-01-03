@@ -27,8 +27,8 @@ namespace StealthNoiseGenerator {
             }
 
         private:
-            StealthTileMap::TileMap<float, scale> points{};
-            StealthTileMap::TileMap<float, scale> attenuations{};
+            StealthTileMap::TileMapF<scale> points{};
+            StealthTileMap::TileMapF<scale> attenuations{};
 
             constexpr void initializeKernel() noexcept {
                 // Optimally initialize kernel. Only need to compute 1/8th of the kernel.
