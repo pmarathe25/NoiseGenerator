@@ -12,6 +12,7 @@ namespace StealthWorldGenerator {
     namespace {
         // Maintain a cache of interpolation kernels of different sizes
         static inline std::unordered_map<int, std::unique_ptr<const InterpolationKernelBase>> kernels{};
+        static inline std::default_random_engine generator{CURRENT_TIME};
     }
     class NoiseGenerator {
         public:
@@ -20,60 +21,68 @@ namespace StealthWorldGenerator {
                 return (1.0f - multiplier <= 0.0f) ? 0.0001f : 1.0f - multiplier;
             }
             // Create octaved noise
-            template <int scale, int numOctaves = 8, int width = 1, int length = 1, int height = 1,
-                typename Distribution = std::uniform_real_distribution<float>, typename Generator = std::default_random_engine>
+            template <int scaleX, int scaleY, int scaleZ, int numOctaves = 8, int width = 1, int length = 1, int height = 1,
+                typename Distribution = std::uniform_real_distribution<float>>
             constexpr StealthTileMap::TileMapF<width, length, height> generateOctaves(Distribution distribution,
-                Generator generator, float multiplier, float decayFactor) {
+                float multiplier, float decayFactor) {
                 if constexpr (numOctaves == 1) {
                     // This multiplier should equal the last one if this is the final octave.
-                    return (multiplier / decayFactor) * generate<scale, width, length, height>(distribution, generator);
+                    return (multiplier / decayFactor) * generate<scaleX, scaleY, scaleZ, width, length, height>(distribution);
                 } else {
-                    return multiplier * generate<scale, width, length, height>(distribution, generator)
-                        + generateOctaves<ceilDivide(scale, 2), numOctaves - 1, width, length, height>(distribution,
-                        generator, multiplier * decayFactor, decayFactor);
+                    return multiplier * generate<scaleX, scaleY, scaleZ, width, length, height>(distribution)
+                        + generateOctaves<ceilDivide(scaleX, 2), ceilDivide(scaleY, 2), ceilDivide(scaleZ, 2),
+                        numOctaves - 1, width, length, height>(distribution, multiplier * decayFactor, decayFactor);
                 }
             }
 
             // Overloads for octaved noise
-            template <int scale, int numOctaves = 8, int width = 1, int length = 1, int height = 1,
+            template <int scaleX, int scaleY, int scaleZ, int numOctaves = 8, int width = 1, int length = 1, int height = 1,
                 typename Distribution = std::uniform_real_distribution<float>, typename Generator = std::default_random_engine>
             constexpr StealthTileMap::TileMapF<width, length, height> generateOctaves(Distribution distribution = std::uniform_real_distribution(0.0f, 1.0f),
-                Generator generator = std::default_random_engine(CURRENT_TIME), float multiplier = 0.5f) {
+                float multiplier = 0.5f) {
                 // Automatically determine decayFactor if it is not provided
-                return generateOctaves<scale, numOctaves, width, length, height>(distribution, generator, multiplier, findDecayFactor(multiplier));
+                return generateOctaves<scaleX, scaleY, scaleZ, numOctaves, width, length, height>(distribution, multiplier, findDecayFactor(multiplier));
             }
 
-            template <int scale, int numOctaves = 8, int width = 1, int length = 1, int height = 1>
+            template <int scaleX, int scaleY, int scaleZ, int numOctaves = 8, int width = 1, int length = 1, int height = 1>
             constexpr StealthTileMap::TileMapF<width, length, height> generateOctaves(float multiplier, float decayFactor) {
-                return generateOctaves<scale, numOctaves, width, length, height>(std::uniform_real_distribution(0.0f, 1.0f),
-                    std::default_random_engine(CURRENT_TIME), multiplier, decayFactor);
+                return generateOctaves<scaleX, scaleY, scaleZ, numOctaves, width, length, height>(std::uniform_real_distribution(0.0f, 1.0f),
+                    multiplier, decayFactor);
             }
 
-            template <int scale, int numOctaves = 8, int width = 1, int length = 1, int height = 1>
+            template <int scaleX, int scaleY, int scaleZ, int numOctaves = 8, int width = 1, int length = 1, int height = 1>
             constexpr StealthTileMap::TileMapF<width, length, height> generateOctaves(float multiplier) {
-                return generateOctaves<scale, numOctaves, width, length, height>(std::uniform_real_distribution(0.0f, 1.0f),
-                    std::default_random_engine(CURRENT_TIME), multiplier, findDecayFactor(multiplier));
+                return generateOctaves<scaleX, scaleY, scaleZ, numOctaves, width, length, height>(std::uniform_real_distribution(0.0f, 1.0f),
+                    multiplier, findDecayFactor(multiplier));
             }
 
             // Create the smoothed noise
-            template <int scale, int width = 1, int length = 1, int height = 1, typename Distribution
-                = std::uniform_real_distribution<float>, typename Generator = std::default_random_engine>
+            template <int scaleX, int scaleY, int scaleZ, int width = 1, int length = 1, int height = 1, typename Distribution
+                = std::uniform_real_distribution<float>>
             constexpr StealthTileMap::TileMapF<width, length, height> generate(Distribution distribution
-                = std::uniform_real_distribution(0.0f, 1.0f), Generator generator = std::default_random_engine(CURRENT_TIME)) {
-                // Generate a new interpolation kernel if one does not exist.
-                if (kernels.count(scale) < 1) {
-                    kernels.emplace(scale, std::make_unique<InterpolationKernel<scale>>());
+                = std::uniform_real_distribution(0.0f, 1.0f)) {
+                // Generate new interpolation kernels if they do not exist.
+                if (kernels.count(scaleX) < 1) {
+                    kernels.emplace(scaleX, std::make_unique<InterpolationKernel<scaleX>>());
                 }
-                const InterpolationKernel<scale>& kernel = *static_cast<const InterpolationKernel<scale>*>(kernels[scale].get());
+                if (kernels.count(scaleY) < 1) {
+                    kernels.emplace(scaleY, std::make_unique<InterpolationKernel<scaleY>>());
+                }
+                if (kernels.count(scaleZ) < 1) {
+                    kernels.emplace(scaleZ, std::make_unique<InterpolationKernel<scaleZ>>());
+                }
+                const InterpolationKernel<scaleX>& kernelX = *static_cast<const InterpolationKernel<scaleX>*>(kernels[scaleX].get());
+                const InterpolationKernel<scaleY>& kernelY = *static_cast<const InterpolationKernel<scaleY>*>(kernels[scaleY].get());
+                const InterpolationKernel<scaleZ>& kernelZ = *static_cast<const InterpolationKernel<scaleZ>*>(kernels[scaleZ].get());
                 // Generate a new internal noise map.
-                constexpr int internalWidth = ceilDivide(width, scale) + 1;
-                constexpr int internalLength = (length == 1) ? 1 : ceilDivide(length, scale) + 1;
-                constexpr int internalHeight = (height == 1) ? 1 : ceilDivide(height, scale) + 1;
+                constexpr int internalWidth = ceilDivide(width, scaleX) + 1;
+                constexpr int internalLength = (length == 1) ? 1 : ceilDivide(length, scaleY) + 1;
+                constexpr int internalHeight = (height == 1) ? 1 : ceilDivide(height, scaleZ) + 1;
                 // Scaled noise map
-                auto internalNoiseMap = generateInternalNoiseMap<internalWidth, internalLength, internalHeight>(distribution, generator);
+                auto internalNoiseMap = generateInternalNoiseMap<internalWidth, internalLength, internalHeight>(distribution);
                 // Interpolated noise
                 StealthTileMap::TileMapF<width, length, height> generatedNoise;
-                generateNoiseMap(internalNoiseMap, generatedNoise, kernel);
+                generateNoiseMap(internalNoiseMap, generatedNoise, kernelX, kernelY, kernelZ);
                 // Return noise map.
                 return generatedNoise;
             }
@@ -106,8 +115,8 @@ namespace StealthWorldGenerator {
             }
 
             // Initialize with random values according to provided distribution
-            template <int internalWidth, int internalLength, int internalHeight, typename Distribution, typename Generator>
-            constexpr auto generateInternalNoiseMap(Distribution& distribution, Generator& generator) {
+            template <int internalWidth, int internalLength, int internalHeight, typename Distribution>
+            constexpr auto generateInternalNoiseMap(Distribution& distribution) {
                 // Internal noise map should be large enough to fit tiles of size (scale, scale).
                 StealthTileMap::TileMapF<internalWidth, internalLength, internalHeight> internalNoiseMap{};
                 for (int k = 0; k < internalHeight; ++k) {
@@ -121,17 +130,18 @@ namespace StealthWorldGenerator {
                 return internalNoiseMap;
             }
 
-            template <int scale, int internalWidth, int internalLength, int internalHeight, int width, int length, int height>
+            template <int scaleX, int scaleY, int scaleZ, int internalWidth, int internalLength, int internalHeight, int width, int length, int height>
             constexpr void generateNoiseMap(const StealthTileMap::TileMapF<internalWidth, internalLength, internalHeight>& internalNoise,
-                StealthTileMap::TileMapF<width, length, height>& generatedNoise, const InterpolationKernel<scale>& kernel) {
+                StealthTileMap::TileMapF<width, length, height>& generatedNoise, const InterpolationKernel<scaleX>& kernelX,
+                const InterpolationKernel<scaleY>& kernelY, const InterpolationKernel<scaleZ>& kernelZ) {
                 // Loop over the internal noise map and fill sections in between
                 if constexpr (internalLength == 1 && internalHeight == 1) {
                     // 1D noise map
                     int fillStartX = 0;
                     for (int i = 0; i < internalWidth - 1; ++i) {
                         // 1D noise
-                        fillLine(i, fillStartX, internalNoise, generatedNoise, kernel);
-                        fillStartX += scale;
+                        fillLine(i, fillStartX, internalNoise, generatedNoise, kernelX);
+                        fillStartX += scaleX;
                     }
                 } else if constexpr (internalHeight == 1) {
                     // 2D noise map
@@ -140,53 +150,55 @@ namespace StealthWorldGenerator {
                         fillStartX = 0;
                         for (int i = 0; i < internalWidth - 1; ++i) {
                             // 2D noise
-                            fillSquare(i, j, fillStartX, fillStartY, internalNoise, generatedNoise, kernel);
-                            fillStartX += scale;
+                            fillSquare(i, j, fillStartX, fillStartY, internalNoise, generatedNoise, kernelX, kernelY);
+                            fillStartX += scaleX;
                         }
-                        fillStartY += scale;
+                        fillStartY += scaleY;
                     }
                 } else {
                     // 3D noise map
                 }
             }
 
-            template <int scale, int internalWidth, int width>
+            template <int scaleX, int internalWidth, int width>
             constexpr void fillLine(int internalX, int fillStartX, const StealthTileMap::TileMapF<internalWidth>& internalNoise,
-                StealthTileMap::TileMapF<width>& generatedNoise, const InterpolationKernel<scale>& kernel) {
+                StealthTileMap::TileMapF<width>& generatedNoise, const InterpolationKernel<scaleX>& kernelX) {
                 // Only fill the part of the length that is valid.
-                const int maxValidX = std::min(width - fillStartX, scale);
+                const int maxValidX = std::min(width - fillStartX, scaleX);
                 // Cache local gradient vectors
                 float left = internalNoise(internalX);
                 float right = internalNoise(internalX + 1);
                 // Cache points and attenuations TileMaps
-                const auto& attenuations = kernel.getAttenuations();
+                const auto& attenuationsX = kernelX.getAttenuations();
                 // Loop over one interpolation kernel tile.
                 for (int i = 0; i < maxValidX; ++i) {
                     // Interpolate based on the 4 surrounding internal noise points.
-                    generatedNoise(fillStartX + i) = interpolate1D(left, right, attenuations(i));
+                    generatedNoise(fillStartX + i) = interpolate1D(left, right, attenuationsX(i));
                 }
             }
 
-            template <int scale, int internalWidth, int internalLength, int width, int length>
+            template <int scaleX, int scaleY, int internalWidth, int internalLength, int width, int length>
             constexpr void fillSquare(int internalX, int internalY, int fillStartX, int fillStartY,
                 const StealthTileMap::TileMapF<internalWidth, internalLength>& internalNoise,
-                StealthTileMap::TileMapF<width, length>& generatedNoise, const InterpolationKernel<scale>& kernel) {
+                StealthTileMap::TileMapF<width, length>& generatedNoise, const InterpolationKernel<scaleX>& kernelX,
+                const InterpolationKernel<scaleY>& kernelY) {
                 // Only fill the part of the tile that is valid.
-                const int maxValidX = std::min(width - fillStartX, scale);
-                const int maxValidY = std::min(length - fillStartY, scale);
+                const int maxValidX = std::min(width - fillStartX, scaleX);
+                const int maxValidY = std::min(length - fillStartY, scaleY);
                 // Cache local gradient vectors
                 float topLeft = internalNoise(internalX, internalY);
                 float topRight = internalNoise(internalX + 1, internalY);
                 float bottomLeft = internalNoise(internalX, internalY + 1);
                 float bottomRight = internalNoise(internalX + 1, internalY + 1);
                 // Cache points and attenuations TileMaps
-                const auto& attenuations = kernel.getAttenuations();
+                const auto& attenuationsX = kernelX.getAttenuations();
+                const auto& attenuationsY = kernelY.getAttenuations();
                 // Loop over one interpolation kernel tile.
                 for (int j = 0; j < maxValidY; ++j) {
                     for (int i = 0; i < maxValidX; ++i) {
                         // Interpolate based on the 4 surrounding internal noise points.
                         generatedNoise(fillStartX + i, fillStartY + j) = interpolate2D(topLeft,
-                            topRight, bottomLeft, bottomRight, attenuations(i), attenuations(j));
+                            topRight, bottomLeft, bottomRight, attenuationsX(i), attenuationsY(j));
                     }
                 }
             }
