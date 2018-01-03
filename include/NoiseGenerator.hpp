@@ -8,7 +8,7 @@
 #include <chrono>
 #include <random>
 
-namespace StealthWorldGenerator {
+namespace StealthNoiseGenerator {
     namespace {
         // Maintain a cache of interpolation kernels of different sizes
         static inline std::unordered_map<int, std::unique_ptr<const InterpolationKernelBase>> kernels{};

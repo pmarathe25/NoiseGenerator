@@ -3,7 +3,7 @@
 #include "TileMap/TileMap.hpp"
 #include <stealthutil>
 
-namespace StealthWorldGenerator {
+namespace StealthNoiseGenerator {
     class InterpolationKernelBase { };
 
     // Maintains a cache of points and attenuations to use for each possible location of a pixel.

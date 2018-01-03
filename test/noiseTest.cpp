@@ -34,7 +34,7 @@ constexpr float threshold(float in, float threshold) {
 int main() {
     // Window
     sf::RenderWindow window(sf::VideoMode(WINDOW_X, WINDOW_Y), "Noise Test");
-    StealthWorldGenerator::NoiseGenerator noiseGenerator;
+    StealthNoiseGenerator::NoiseGenerator noiseGenerator;
 
     double totalTime = 0;
     int numFrames = 0;
