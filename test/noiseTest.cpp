@@ -1,14 +1,9 @@
 #include "Color/ColorPalette.hpp"
 #include "NoiseGenerator/NoiseGenerator.hpp"
+#include <stealthutil>
 #include <SFML/Window.hpp>
 #include <SFML/Graphics.hpp>
 #include <functional>
-#include <chrono>
-#include <thread>
-
-inline void sleepMS(long ms) {
-    std::this_thread::sleep_for(std::chrono::milliseconds(ms));
-}
 
 using StealthColor::Color, StealthColor::applyPalette, StealthColor::GradientColorPalette;
 
@@ -41,13 +36,16 @@ int main() {
     // Window
     sf::RenderWindow window(sf::VideoMode(WINDOW_X, WINDOW_Y), "Noise Test");
 
-    double totalTime = 0;
+    long long totalTime = 0;
     int numFrames = 0;
+
+    float smoothness = 0.0f;
 
     while (window.isOpen()) {
         auto start = std::chrono::steady_clock::now();
 
-        auto noise = StealthNoiseGenerator::generateOctaves<WINDOW_X, WINDOW_Y, NUM_LAYERS, 400, 400, 200>();
+        smoothness += (smoothness > 1.0f) ? -1.0f : 0.1;
+        auto noise = StealthNoiseGenerator::generateOctaves<WINDOW_X, WINDOW_Y, NUM_LAYERS, 400, 400, 200>(smoothness);
 
         // noise = (noise < noise2) + (noise > noise2); // Should be all 1s (white)
         // noise = noise && (noise < noise2);
