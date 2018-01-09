@@ -59,7 +59,7 @@ int main() {
 
         auto end = std::chrono::steady_clock::now();
         totalTime += std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-        std::cout << "Average Time:  " << (totalTime / ++numFrames) << " milliseconds" << '\r';
+        std::cout << "Average Time:  " << (totalTime / ++numFrames) << " milliseconds" << '\r' << std::flush;
 
         auto colorMap = applyPalette(noisePalette, noise);
 
