@@ -150,6 +150,12 @@ namespace StealthNoiseGenerator {
     template <int width, int length, int scaleX, int scaleY, typename Distribution = std::uniform_real_distribution<float>>
     constexpr StealthTileMap::TileMapF<width, length> generate(Distribution&& distribution
         = std::uniform_real_distribution{0.0f, 1.0f}) {
+            // Generate 1D noise if there's only 1 dimension.
+            if constexpr (length == 1) {
+                return generate<width, scaleX>(std::forward<Distribution&&>(distribution));
+            } else if constexpr (width == 1) {
+                return generate<length, scaleY>(std::forward<Distribution&&>(distribution));
+            }
             // Generate new interpolation kernels if they do not exist.
             if (kernels.count(scaleX) < 1) kernels.emplace(scaleX, std::make_unique<InterpolationKernel<scaleX>>());
             if (kernels.count(scaleY) < 1) kernels.emplace(scaleY, std::make_unique<InterpolationKernel<scaleY>>());
@@ -258,6 +264,14 @@ namespace StealthNoiseGenerator {
         = std::uniform_real_distribution<float>>
     constexpr StealthTileMap::TileMapF<width, length, height> generate(Distribution&& distribution
         = std::uniform_real_distribution{0.0f, 1.0f}) {
+        // Generate 2D noise if there are only 2 dimensions.
+        if constexpr (height == 1) {
+            return generate<width, length, scaleX, scaleY>(std::forward<Distribution&&>(distribution));
+        } else if constexpr (length == 1) {
+            return generate<width, height, scaleX, scaleZ>(std::forward<Distribution&&>(distribution));
+        } else if constexpr (width == 1) {
+            return generate<length, height, scaleY, scaleZ>(std::forward<Distribution&&>(distribution));
+        }
         // Generate new interpolation kernels if they do not exist.
         if (kernels.count(scaleX) < 1) kernels.emplace(scaleX, std::make_unique<InterpolationKernel<scaleX>>());
         if (kernels.count(scaleY) < 1) kernels.emplace(scaleY, std::make_unique<InterpolationKernel<scaleY>>());
