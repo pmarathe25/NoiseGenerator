@@ -23,18 +23,18 @@ namespace StealthNoiseGenerator {
     // Initialize with random values according to provided distribution
     template <int internalWidth, int internalLength = 1, int internalHeight = 1, typename Distribution>
     constexpr auto generateInternalNoiseMap(Distribution& distribution) {
-            // Internal noise map should be large enough to fit tiles of size (scale, scale).
-            StealthTileMap::TileMapF<internalWidth, internalLength, internalHeight> internalNoiseMap{};
-            for (int k = 0; k < internalHeight; ++k) {
-                for (int j = 0; j < internalLength; ++j) {
-                    for (int i = 0; i < internalWidth; ++i) {
-                        float val = distribution(generator);
-                        internalNoiseMap(i, j, k) = val;
-                    }
+        // Internal noise map should be large enough to fit tiles of size (scale, scale).
+        StealthTileMap::TileMapF<internalWidth, internalLength, internalHeight> internalNoiseMap{};
+        for (int k = 0; k < internalHeight; ++k) {
+            for (int j = 0; j < internalLength; ++j) {
+                for (int i = 0; i < internalWidth; ++i) {
+                    float val = distribution(generator);
+                    internalNoiseMap(i, j, k) = val;
                 }
             }
-            return internalNoiseMap;
         }
+        return internalNoiseMap;
+    }
 
     // 1D
     constexpr float interpolate1D(float left, float right, float attenuation) noexcept {
@@ -62,24 +62,24 @@ namespace StealthNoiseGenerator {
 
     template <int width, int scaleX, typename Distribution = std::uniform_real_distribution<float>>
     constexpr StealthTileMap::TileMapF<width> generate(Distribution&& distribution = std::uniform_real_distribution{0.0f, 1.0f}) {
-            // Generate new interpolation kernels if they do not exist.
-            if (kernels.count(scaleX) < 1) kernels.emplace(scaleX, std::make_unique<InterpolationKernel<scaleX>>());
-            // Get kernel
-            const InterpolationKernel<scaleX>& kernelX = *static_cast<const InterpolationKernel<scaleX>*>(kernels[scaleX].get());
-            // Generate a new internal noise map.
-            constexpr int internalWidth = ceilDivide(width, scaleX) + 1;
-            auto internalNoiseMap = generateInternalNoiseMap<internalWidth>(distribution);
-            // Interpolated noise
-            StealthTileMap::TileMapF<width> generatedNoiseMap;
-            // 1D noise map
-            int fillStartX = 0;
-            for (int i = 0; i < internalWidth - 1; ++i) {
-                // 1D noise unit
-                fillLine(i, fillStartX, internalNoiseMap, generatedNoiseMap, kernelX);
-                fillStartX += scaleX;
-            }
-            // Return noise map.
-            return generatedNoiseMap;
+        // Generate new interpolation kernels if they do not exist.
+        if (kernels.count(scaleX) < 1) kernels.emplace(scaleX, std::make_unique<InterpolationKernel<scaleX>>());
+        // Get kernel
+        const InterpolationKernel<scaleX>& kernelX = *static_cast<const InterpolationKernel<scaleX>*>(kernels[scaleX].get());
+        // Generate a new internal noise map.
+        constexpr int internalWidth = ceilDivide(width, scaleX) + 1;
+        auto internalNoiseMap = generateInternalNoiseMap<internalWidth>(distribution);
+        // Interpolated noise
+        StealthTileMap::TileMapF<width> generatedNoiseMap;
+        // 1D noise map
+        int fillStartX = 0;
+        for (int i = 0; i < internalWidth - 1; ++i) {
+            // 1D noise unit
+            fillLine(i, fillStartX, internalNoiseMap, generatedNoiseMap, kernelX);
+            fillStartX += scaleX;
+        }
+        // Return noise map.
+        return generatedNoiseMap;
     }
 
     template <int width, int scaleX, int numOctaves = 8, typename Distribution = std::uniform_real_distribution<float>>
@@ -149,38 +149,38 @@ namespace StealthNoiseGenerator {
 
     template <int width, int length, int scaleX, int scaleY, typename Distribution = std::uniform_real_distribution<float>>
     constexpr StealthTileMap::TileMapF<width, length> generate(Distribution&& distribution
-        = std::uniform_real_distribution{0.0f, 1.0f}) {
-            // Generate 1D noise if there's only 1 dimension.
-            if constexpr (length == 1) {
-                return generate<width, scaleX>(std::forward<Distribution&&>(distribution));
-            } else if constexpr (width == 1) {
-                return generate<length, scaleY>(std::forward<Distribution&&>(distribution));
+    = std::uniform_real_distribution{0.0f, 1.0f}) {
+        // Generate 1D noise if there's only 1 dimension.
+        if constexpr (length == 1) {
+            return generate<width, scaleX>(std::forward<Distribution&&>(distribution));
+        } else if constexpr (width == 1) {
+            return generate<length, scaleY>(std::forward<Distribution&&>(distribution));
+        }
+        // Generate new interpolation kernels if they do not exist.
+        if (kernels.count(scaleX) < 1) kernels.emplace(scaleX, std::make_unique<InterpolationKernel<scaleX>>());
+        if (kernels.count(scaleY) < 1) kernels.emplace(scaleY, std::make_unique<InterpolationKernel<scaleY>>());
+        // Get kernels
+        const InterpolationKernel<scaleX>& kernelX = *static_cast<const InterpolationKernel<scaleX>*>(kernels[scaleX].get());
+        const InterpolationKernel<scaleY>& kernelY = *static_cast<const InterpolationKernel<scaleY>*>(kernels[scaleY].get());
+        // Generate a new internal noise map.
+        constexpr int internalWidth = ceilDivide(width, scaleX) + 1;
+        constexpr int internalLength = ceilDivide(length, scaleY) + 1;
+        auto internalNoiseMap = generateInternalNoiseMap<internalWidth, internalLength>(distribution);
+        // Interpolated noise
+        StealthTileMap::TileMapF<width, length> generatedNoiseMap;
+        // 2D noise map
+        int fillStartX = 0, fillStartY = 0;
+        for (int j = 0; j < internalLength - 1; ++j) {
+            fillStartX = 0;
+            for (int i = 0; i < internalWidth - 1; ++i) {
+                // 2D noise unit
+                fillSquare(i, j, fillStartX, fillStartY, internalNoiseMap, generatedNoiseMap, kernelX, kernelY);
+                fillStartX += scaleX;
             }
-            // Generate new interpolation kernels if they do not exist.
-            if (kernels.count(scaleX) < 1) kernels.emplace(scaleX, std::make_unique<InterpolationKernel<scaleX>>());
-            if (kernels.count(scaleY) < 1) kernels.emplace(scaleY, std::make_unique<InterpolationKernel<scaleY>>());
-            // Get kernels
-            const InterpolationKernel<scaleX>& kernelX = *static_cast<const InterpolationKernel<scaleX>*>(kernels[scaleX].get());
-            const InterpolationKernel<scaleY>& kernelY = *static_cast<const InterpolationKernel<scaleY>*>(kernels[scaleY].get());
-            // Generate a new internal noise map.
-            constexpr int internalWidth = ceilDivide(width, scaleX) + 1;
-            constexpr int internalLength = ceilDivide(length, scaleY) + 1;
-            auto internalNoiseMap = generateInternalNoiseMap<internalWidth, internalLength>(distribution);
-            // Interpolated noise
-            StealthTileMap::TileMapF<width, length> generatedNoiseMap;
-            // 2D noise map
-            int fillStartX = 0, fillStartY = 0;
-            for (int j = 0; j < internalLength - 1; ++j) {
-                fillStartX = 0;
-                for (int i = 0; i < internalWidth - 1; ++i) {
-                    // 2D noise unit
-                    fillSquare(i, j, fillStartX, fillStartY, internalNoiseMap, generatedNoiseMap, kernelX, kernelY);
-                    fillStartX += scaleX;
-                }
-                fillStartY += scaleY;
-            }
-            // Return noise map.
-            return generatedNoiseMap;
+            fillStartY += scaleY;
+        }
+        // Return noise map.
+        return generatedNoiseMap;
     }
 
     template <int width, int length, int scaleX, int scaleY, int numOctaves = 8, typename Distribution = std::uniform_real_distribution<float>>
@@ -226,39 +226,39 @@ namespace StealthNoiseGenerator {
 
     template <int width, int length, int height, int scaleX, int scaleY, int scaleZ, int internalWidth, int internalLength, int internalHeight>
     constexpr void fillCube(int internalX, int internalY, int internalZ, int fillStartX, int fillStartY, int fillStartZ,
-                const StealthTileMap::TileMapF<internalWidth, internalLength, internalHeight>& internalNoiseMap,
-                StealthTileMap::TileMapF<width, length, height>& generatedNoiseMap, const InterpolationKernel<scaleX>& kernelX,
-                const InterpolationKernel<scaleY>& kernelY, const InterpolationKernel<scaleZ>& kernelZ) {
-                // Only fill the part of the tile that is valid.
-                const int maxValidX = std::min(width - fillStartX, scaleX);
-                const int maxValidY = std::min(length - fillStartY, scaleY);
-                const int maxValidZ = std::min(height - fillStartZ, scaleZ);
-                // Cache noise values
-                float topLeft0 = internalNoiseMap(internalX, internalY, internalZ);
-                float topRight0 = internalNoiseMap(internalX + 1, internalY, internalZ);
-                float bottomLeft0 = internalNoiseMap(internalX, internalY + 1, internalZ);
-                float bottomRight0 = internalNoiseMap(internalX + 1, internalY + 1, internalZ);
-                float topLeft1 = internalNoiseMap(internalX, internalY, internalZ + 1);
-                float topRight1 = internalNoiseMap(internalX + 1, internalY, internalZ + 1);
-                float bottomLeft1 = internalNoiseMap(internalX, internalY + 1, internalZ + 1);
-                float bottomRight1 = internalNoiseMap(internalX + 1, internalY + 1, internalZ + 1);
-                // Cache attenuations TileMap
-                const auto& attenuationsX = kernelX.getAttenuations();
-                const auto& attenuationsY = kernelY.getAttenuations();
-                const auto& attenuationsZ = kernelZ.getAttenuations();
-                // Loop over one interpolation kernel tile.
-                for (int k = 0; k < maxValidZ; ++k) {
-                    for (int j = 0; j < maxValidY; ++j) {
-                        for (int i = 0; i < maxValidX; ++i) {
-                            // Interpolate based on the 4 surrounding internal noise points.
-                            generatedNoiseMap(fillStartX + i, fillStartY + j, fillStartZ + k)
-                                = interpolate3D(topLeft0, topRight0, bottomLeft0, bottomRight0,
-                                topLeft1, topRight1, bottomLeft1, bottomRight1,
-                                attenuationsX(i), attenuationsY(j), attenuationsZ(k));
-                            }
-                        }
+        const StealthTileMap::TileMapF<internalWidth, internalLength, internalHeight>& internalNoiseMap,
+        StealthTileMap::TileMapF<width, length, height>& generatedNoiseMap, const InterpolationKernel<scaleX>& kernelX,
+        const InterpolationKernel<scaleY>& kernelY, const InterpolationKernel<scaleZ>& kernelZ) {
+        // Only fill the part of the tile that is valid.
+        const int maxValidX = std::min(width - fillStartX, scaleX);
+        const int maxValidY = std::min(length - fillStartY, scaleY);
+        const int maxValidZ = std::min(height - fillStartZ, scaleZ);
+        // Cache noise values
+        float topLeft0 = internalNoiseMap(internalX, internalY, internalZ);
+        float topRight0 = internalNoiseMap(internalX + 1, internalY, internalZ);
+        float bottomLeft0 = internalNoiseMap(internalX, internalY + 1, internalZ);
+        float bottomRight0 = internalNoiseMap(internalX + 1, internalY + 1, internalZ);
+        float topLeft1 = internalNoiseMap(internalX, internalY, internalZ + 1);
+        float topRight1 = internalNoiseMap(internalX + 1, internalY, internalZ + 1);
+        float bottomLeft1 = internalNoiseMap(internalX, internalY + 1, internalZ + 1);
+        float bottomRight1 = internalNoiseMap(internalX + 1, internalY + 1, internalZ + 1);
+        // Cache attenuations TileMap
+        const auto& attenuationsX = kernelX.getAttenuations();
+        const auto& attenuationsY = kernelY.getAttenuations();
+        const auto& attenuationsZ = kernelZ.getAttenuations();
+        // Loop over one interpolation kernel tile.
+        for (int k = 0; k < maxValidZ; ++k) {
+            for (int j = 0; j < maxValidY; ++j) {
+                for (int i = 0; i < maxValidX; ++i) {
+                    // Interpolate based on the 4 surrounding internal noise points.
+                    generatedNoiseMap(fillStartX + i, fillStartY + j, fillStartZ + k)
+                        = interpolate3D(topLeft0, topRight0, bottomLeft0, bottomRight0,
+                        topLeft1, topRight1, bottomLeft1, bottomRight1,
+                        attenuationsX(i), attenuationsY(j), attenuationsZ(k));
+                    }
                 }
-            }
+        }
+    }
 
     template <int width, int length, int height, int scaleX, int scaleY, int scaleZ, typename Distribution
         = std::uniform_real_distribution<float>>
