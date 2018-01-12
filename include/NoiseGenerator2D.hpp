@@ -81,8 +81,7 @@ namespace StealthNoiseGenerator {
     }
 
     template <int width, int length, int scaleX, int scaleY, int numOctaves = 8, typename Distribution = std::uniform_real_distribution<float>>
-    constexpr StealthTileMap::TileMapF<width, length> generateOctaves(Distribution&& distribution = std::uniform_real_distribution{0.0f, 1.0f},
-        float multiplier = 0.5f, float decayFactor = 0.5f) {
+    constexpr StealthTileMap::TileMapF<width, length> generateOctaves(Distribution&& distribution, float multiplier, float decayFactor) {
         // This multiplier should equal the last one if this is the final octave.
         if constexpr (numOctaves == 1) return (multiplier / decayFactor) * generate<width, length, scaleX, scaleY>(std::forward<Distribution&&>(distribution));
         else return multiplier * generate<width, length, scaleX, scaleY>(std::forward<Distribution&&>(distribution))
@@ -92,13 +91,13 @@ namespace StealthNoiseGenerator {
 
     // Convenience overloads
     template <int width, int length, int scaleX, int scaleY, int numOctaves = 8, typename Distribution = std::uniform_real_distribution<float>>
-    constexpr StealthTileMap::TileMapF<width, length> generateOctaves(Distribution&& distribution, float multiplier) {
+    constexpr StealthTileMap::TileMapF<width, length> generateOctaves(Distribution&& distribution, float multiplier = 0.5f) {
         return generateOctaves<width, length, scaleX, scaleY, numOctaves>
             (std::forward<Distribution&&>(distribution), multiplier, findDecayFactor(multiplier));
     }
 
     template <int width, int length, int scaleX, int scaleY, int numOctaves = 8, typename Distribution = std::uniform_real_distribution<float>>
-    constexpr StealthTileMap::TileMapF<width, length> generateOctaves(float multiplier) {
+    constexpr StealthTileMap::TileMapF<width, length> generateOctaves(float multiplier = 0.5f) {
         return generateOctaves<width, length, scaleX, scaleY, numOctaves>
             (std::uniform_real_distribution{0.0f, 1.0f}, multiplier, findDecayFactor(multiplier));
     }
