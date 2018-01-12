@@ -7,48 +7,49 @@
 #include <random>
 
 namespace StealthNoiseGenerator {
-    constexpr float interpolate2D(float topLeft, float topRight, float bottomLeft,
-        float bottomRight, float attenuationX, float attenuationY) noexcept {
-        // Interpolate horizontally
-        float nx0 = interpolate1D(topLeft, topRight, attenuationX);
-        float nx1 = interpolate1D(bottomLeft, bottomRight, attenuationX);
-        // Interpolate vertically
-        float nxy = interpolate1D(nx0, nx1, attenuationY);
-        return nxy;
-    }
+    namespace {
+        constexpr float interpolate2D(float topLeft, float topRight, float bottomLeft,
+            float bottomRight, float attenuationX, float attenuationY) noexcept {
+            // Interpolate horizontally
+            float nx0 = interpolate1D(topLeft, topRight, attenuationX);
+            float nx1 = interpolate1D(bottomLeft, bottomRight, attenuationX);
+            // Interpolate vertically
+            float nxy = interpolate1D(nx0, nx1, attenuationY);
+            return nxy;
+        }
 
-    template <int width, int length, int scaleX, int scaleY, int internalWidth, int internalLength>
-    constexpr void fillSquare(int internalX, int internalY, int fillStartX, int fillStartY,
-        const StealthTileMap::TileMapF<internalWidth, internalLength>& internalNoiseMap,
-        StealthTileMap::TileMapF<width, length>& generatedNoiseMap, const TileMapF<scaleX>& attenuationsX,
-        const TileMapF<scaleY>& attenuationsY) {
-        // Only fill the part of the tile that is valid.
-        const int maxValidX = std::min(width - fillStartX, scaleX);
-        const int maxValidY = std::min(length - fillStartY, scaleY);
-        // Cache noise indices
-        const int topLeftIndex = internalX + internalY * internalNoiseMap.width();
-        const int bottomLeftIndex = topLeftIndex + internalNoiseMap.width();
-        // Cache noise values
-        float topLeft = internalNoiseMap(topLeftIndex);
-        float topRight = internalNoiseMap(topLeftIndex + 1);
-        float bottomLeft = internalNoiseMap(bottomLeftIndex);
-        float bottomRight = internalNoiseMap(bottomLeftIndex + 1);
-        // Loop over one interpolation kernel tile.
-        int index = fillStartX + fillStartY * generatedNoiseMap.width();
-        for (int j = 0; j < maxValidY; ++j) {
-            for (int i = 0; i < maxValidX; ++i) {
+        template <int width, int length, int scaleX, int scaleY, int internalWidth, int internalLength>
+        constexpr void fillSquare(int internalX, int internalY, int fillStartX, int fillStartY,
+            const StealthTileMap::TileMapF<internalWidth, internalLength>& internalNoiseMap,
+            StealthTileMap::TileMapF<width, length>& generatedNoiseMap, const TileMapF<scaleX>& attenuationsX,
+            const TileMapF<scaleY>& attenuationsY) {
+            // Only fill the part of the tile that is valid.
+            const int maxValidX = std::min(width - fillStartX, scaleX);
+            const int maxValidY = std::min(length - fillStartY, scaleY);
+            // Cache noise indices
+            const int topLeftIndex = internalX + internalY * internalNoiseMap.width();
+            const int bottomLeftIndex = topLeftIndex + internalNoiseMap.width();
+            // Cache noise values
+            float topLeft = internalNoiseMap(topLeftIndex);
+            float topRight = internalNoiseMap(topLeftIndex + 1);
+            float bottomLeft = internalNoiseMap(bottomLeftIndex);
+            float bottomRight = internalNoiseMap(bottomLeftIndex + 1);
+            // Loop over one interpolation kernel tile.
+            int index = fillStartX + fillStartY * generatedNoiseMap.width();
+            for (int j = 0; j < maxValidY; ++j) {
+                for (int i = 0; i < maxValidX; ++i) {
                 // Interpolate based on the 4 surrounding internal noise points.
                 generatedNoiseMap(index++) = interpolate2D(topLeft, topRight, bottomLeft,
                     bottomRight, attenuationsX(i), attenuationsY(j));
+                }
+                // Wrap around to the first element of the next row.
+                index += generatedNoiseMap.width() - maxValidX;
             }
-            // Wrap around to the first element of the next row.
-            index += generatedNoiseMap.width() - maxValidX;
         }
     }
 
     template <int width, int length, int scaleX, int scaleY, typename Distribution = std::uniform_real_distribution<float>>
-    constexpr StealthTileMap::TileMapF<width, length> generate(Distribution&& distribution
-    = std::uniform_real_distribution{0.0f, 1.0f}) {
+    constexpr StealthTileMap::TileMapF<width, length> generate(Distribution&& distribution = std::uniform_real_distribution{0.0f, 1.0f}) {
         // Generate 1D noise if there's only 1 dimension.
         if constexpr (length == 1) {
             return generate<width, scaleX>(std::forward<Distribution&&>(distribution));

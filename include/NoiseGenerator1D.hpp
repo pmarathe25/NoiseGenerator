@@ -7,24 +7,26 @@
 #include <random>
 
 namespace StealthNoiseGenerator {
-    constexpr float interpolate1D(float left, float right, float attenuation) noexcept {
-        // Interpolate between two points
-        float nx = left * (1.0f - attenuation) + right * attenuation;
-        return nx;
-    }
+    namespace {
+        constexpr float interpolate1D(float left, float right, float attenuation) noexcept {
+            // Interpolate between two points
+            float nx = left * (1.0f - attenuation) + right * attenuation;
+            return nx;
+        }
 
-    template <int width, int scaleX, int internalWidth>
-    constexpr void fillLine(int internalX, int fillStartX, const StealthTileMap::TileMapF<internalWidth>& internalNoiseMap,
-        StealthTileMap::TileMapF<width>& generatedNoiseMap, const TileMapF<scaleX>& attenuationsX) {
-        // Only fill the part of the length that is valid.
-        const int maxValidX = std::min(width - fillStartX, scaleX);
-        // Cache noise values
-        float left = internalNoiseMap(internalX);
-        float right = internalNoiseMap(internalX + 1);
-        // Loop over one interpolation kernel tile.
-        for (int i = 0; i < maxValidX; ++i) {
-            // Interpolate based on the 4 surrounding internal noise points.
-            generatedNoiseMap(fillStartX + i) = interpolate1D(left, right, attenuationsX(i));
+        template <int width, int scaleX, int internalWidth>
+        constexpr void fillLine(int internalX, int fillStartX, const StealthTileMap::TileMapF<internalWidth>& internalNoiseMap,
+            StealthTileMap::TileMapF<width>& generatedNoiseMap, const TileMapF<scaleX>& attenuationsX) {
+            // Only fill the part of the length that is valid.
+            const int maxValidX = std::min(width - fillStartX, scaleX);
+            // Cache noise values
+            float left = internalNoiseMap(internalX);
+            float right = internalNoiseMap(internalX + 1);
+            // Loop over one interpolation kernel tile.
+            for (int i = 0; i < maxValidX; ++i) {
+                // Interpolate based on the 4 surrounding internal noise points.
+                generatedNoiseMap(fillStartX + i) = interpolate1D(left, right, attenuationsX(i));
+            }
         }
     }
 
