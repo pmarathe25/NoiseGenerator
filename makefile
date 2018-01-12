@@ -7,7 +7,7 @@ TESTOBJS = $(addprefix $(BUILDDIR)/, noiseTest.o)
 # Headers
 INCLUDEPATH = include/
 INCLUDE = -I$(INCLUDEPATH)
-HEADERS = $(addprefix $(INCLUDEPATH)/, InterpolationKernel.hpp NoiseGenerator.hpp)
+HEADERS = $(addprefix $(INCLUDEPATH)/, AttenuationsCache.hpp NoiseGenerator.hpp NoiseGeneratorUtil.hpp NoiseGenerator1D.hpp NoiseGenerator2D.hpp NoiseGenerator3D.hpp)
 # Compiler settings
 CXX = g++
 CFLAGS = -fPIC -c -std=c++17 $(INCLUDE) -O3 -Wpedantic -march=native
