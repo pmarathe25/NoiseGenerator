@@ -13,11 +13,11 @@ namespace StealthNoiseGenerator {
             }
             return attenuations;
         }
-    }
 
-    // Attenuations cache
-    template <int scale>
-    static const StealthTileMap::TileMapF<scale> AttenuationsCache = generateAttenuations<scale>();
+        // Attenuations cache
+        template <int scale>
+        const StealthTileMap::TileMapF<scale> AttenuationsCache = generateAttenuations<scale>();
+    }
 } /* StealthWorldGenerator */
 
 #endif
