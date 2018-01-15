@@ -31,7 +31,7 @@ namespace StealthNoiseGenerator {
             }
             return InternalNoiseMapCache<size>;
         }
-    }
+    } /* Anonymous namespace */
 } /* StealthWorldGenerator */
 
 #endif

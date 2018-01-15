@@ -110,11 +110,11 @@ namespace StealthNoiseGenerator {
 
     template <int width, int length, int height, int scaleX, int scaleY, int scaleZ, int numOctaves = 8,
         typename Distribution = std::uniform_real_distribution<float>>
-    constexpr StealthTileMap::TileMapF<width, length, height> generateOctaves(Distribution&& distribution, float multiplier, float decayFactor) {
+    constexpr StealthTileMap::TileMapF<width, length, height> generateOctavesImpl(Distribution&& distribution, float multiplier, float decayFactor) {
         // This multiplier should equal the last one if this is the final octave.
         if constexpr (numOctaves == 1) return (multiplier / decayFactor) * generate<width, length, height, scaleX, scaleY, scaleZ>(std::forward<Distribution&&>(distribution));
         else return multiplier * generate<width, length, height, scaleX, scaleY, scaleZ>(std::forward<Distribution&&>(distribution))
-            + generateOctaves<width, length, height, ceilDivide(scaleX, 2), ceilDivide(scaleY, 2),
+            + generateOctavesImpl<width, length, height, ceilDivide(scaleX, 2), ceilDivide(scaleY, 2),
             ceilDivide(scaleZ, 2), numOctaves - 1>(std::forward<Distribution&&>(distribution), multiplier * decayFactor, decayFactor);
     }
 
@@ -122,21 +122,21 @@ namespace StealthNoiseGenerator {
     template <int width, int length, int height, int scaleX, int scaleY, int scaleZ, int numOctaves = 8,
         typename Distribution = std::uniform_real_distribution<float>>
     constexpr StealthTileMap::TileMapF<width, length, height> generateOctaves(Distribution&& distribution, float multiplier = 0.5f) {
-        return generateOctaves<width, length, height, scaleX, scaleY, scaleZ, numOctaves>
+        return generateOctavesImpl<width, length, height, scaleX, scaleY, scaleZ, numOctaves>
             (std::forward<Distribution&&>(distribution), multiplier, findDecayFactor(multiplier));
     }
 
     template <int width, int length, int height, int scaleX, int scaleY, int scaleZ, int numOctaves = 8,
         typename Distribution = std::uniform_real_distribution<float>>
     constexpr StealthTileMap::TileMapF<width, length, height> generateOctaves(float multiplier = 0.5f) {
-        return generateOctaves<width, length, height, scaleX, scaleY, scaleZ, numOctaves>
+        return generateOctavesImpl<width, length, height, scaleX, scaleY, scaleZ, numOctaves>
             (std::uniform_real_distribution{0.0f, 1.0f}, multiplier, findDecayFactor(multiplier));
     }
 
     template <int width, int length, int height, int scaleX, int scaleY, int scaleZ, int numOctaves = 8,
         typename Distribution = std::uniform_real_distribution<float>>
     constexpr StealthTileMap::TileMapF<width, length, height> generateOctaves(float multiplier, float decayFactor) {
-        return generateOctaves<width, length, height, scaleX, scaleY, scaleZ, numOctaves>
+        return generateOctavesImpl<width, length, height, scaleX, scaleY, scaleZ, numOctaves>
             (std::uniform_real_distribution{0.0f, 1.0f}, multiplier, decayFactor);
     }
 } /* StealthNoiseGenerator */
