@@ -24,8 +24,9 @@ namespace StealthNoiseGenerator {
             float right = internalNoiseMap(internalX + 1);
             // Loop over one interpolation kernel tile.
             for (int i = 0; i < maxValidX; ++i) {
-                // Interpolate based on the 4 surrounding internal noise points.
-                generatedNoiseMap(fillStartX + i) = interpolate1D(left, right, attenuationsX(i));
+                float attenuationX = attenuationsX(i);
+                // Interpolate based on the 2 surrounding internal noise points.
+                generatedNoiseMap(fillStartX + i) = interpolate1D(left, right, attenuationX);
             }
         }
     }

@@ -37,10 +37,12 @@ namespace StealthNoiseGenerator {
             // Loop over one interpolation kernel tile.
             int index = fillStartX + fillStartY * generatedNoiseMap.width();
             for (int j = 0; j < maxValidY; ++j) {
+                float attenuationY = attenuationsY(j);
                 for (int i = 0; i < maxValidX; ++i) {
-                // Interpolate based on the 4 surrounding internal noise points.
-                generatedNoiseMap(index++) = interpolate2D(topLeft, topRight, bottomLeft,
-                    bottomRight, attenuationsX(i), attenuationsY(j));
+                    float attenuationX = attenuationsX(i);
+                    // Interpolate based on the 4 surrounding internal noise points.
+                    generatedNoiseMap(index++) = interpolate2D(topLeft, topRight, bottomLeft,
+                        bottomRight, attenuationX, attenuationY);
                 }
                 // Wrap around to the first element of the next row.
                 index += generatedNoiseMap.width() - maxValidX;
