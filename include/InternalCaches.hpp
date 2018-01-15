@@ -8,7 +8,7 @@ namespace StealthNoiseGenerator {
         template <int scale>
         constexpr StealthTileMap::TileMapF<scale> generateAttenuations() noexcept {
             StealthTileMap::TileMapF<scale> attenuations;
-            for (int i = scale - 1; i >= 0; --i) {
+            for (int i = 0; i < scale; ++i) {
                 attenuations(i) = attenuationPolynomial((i + 0.5f) / scale);
             }
             return attenuations;

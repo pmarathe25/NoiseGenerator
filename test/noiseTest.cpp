@@ -10,8 +10,8 @@ using StealthColor::Color, StealthColor::applyPalette, StealthColor::GradientCol
 
 constexpr int WINDOW_X = 800;
 constexpr int WINDOW_Y = 800;
-constexpr int NUM_LAYERS = 30;
-constexpr int FRAMERATE = 15;
+constexpr int NUM_LAYERS = 1;
+constexpr int FRAMERATE = 0;
 
 const GradientColorPalette noisePalette{Color(0, 0, 0), Color(255, 255, 255)};
 
