@@ -15,17 +15,6 @@ namespace StealthNoiseGenerator {
             // Treat as an infinite geometric sum where multiplier = alpha and decayFactor = r
             return (1.0f - multiplier <= 0.0f) ? 0.0001f : 1.0f - multiplier;
         }
-
-        // Initialize with random values according to provided distribution
-        template <int internalWidth, int internalLength = 1, int internalHeight = 1, typename Distribution>
-        constexpr auto generateInternalNoiseMap(Distribution& distribution) {
-            // Internal noise map should be large enough to fit tiles of size (scale, scale).
-            StealthTileMap::TileMapF<internalWidth, internalLength, internalHeight> internalNoiseMap;
-            for (int i = 0; i < internalNoiseMap.size(); ++i) {
-                internalNoiseMap(i) = distribution(generator);
-            }
-            return internalNoiseMap;
-        }
     }
 } /* StealthNoiseGenerator */
 

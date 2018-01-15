@@ -14,8 +14,8 @@ namespace StealthNoiseGenerator {
             return nx;
         }
 
-        template <int width, int scaleX, int internalWidth>
-        constexpr void fillLine(int internalX, int fillStartX, const StealthTileMap::TileMapF<internalWidth>& internalNoiseMap,
+        template <int width, int scaleX, typename InternalNoiseType>
+        constexpr void fillLine(int internalX, int fillStartX, const InternalNoiseType& internalNoiseMap,
             StealthTileMap::TileMapF<width>& generatedNoiseMap, const TileMapF<scaleX>& attenuationsX) {
             // Only fill the part of the length that is valid.
             const int maxValidX = std::min(width - fillStartX, scaleX);
@@ -29,7 +29,7 @@ namespace StealthNoiseGenerator {
                 generatedNoiseMap(fillStartX + i) = interpolate1D(left, right, attenuationX);
             }
         }
-        
+
     } /* Anonymous namespace */
 
     template <int width, int scaleX, typename Distribution = std::uniform_real_distribution<float>>
@@ -38,7 +38,7 @@ namespace StealthNoiseGenerator {
         const auto& attenuationsX{AttenuationsCache<scaleX>};
         // Generate a new internal noise map.
         constexpr int internalWidth = ceilDivide(width, scaleX) + 1;
-        const auto internalNoiseMap{std::move(generateInternalNoiseMap<internalWidth>(distribution))};
+        const auto& internalNoiseMap{generateInternalNoiseMap<internalWidth>(distribution)};
         // Interpolated noise
         StealthTileMap::TileMapF<width> generatedNoiseMap;
         // 1D noise map

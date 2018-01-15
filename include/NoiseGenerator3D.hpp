@@ -19,20 +19,22 @@ namespace StealthNoiseGenerator {
             return nxyz;
         }
 
-        template <int width, int length, int height, int scaleX, int scaleY, int scaleZ, int internalWidth, int internalLength, int internalHeight>
+        template <int width, int length, int height, int scaleX, int scaleY, int scaleZ, typename InternalNoiseType>
         constexpr void fillCube(int internalX, int internalY, int internalZ, int fillStartX, int fillStartY, int fillStartZ,
-            const StealthTileMap::TileMapF<internalWidth, internalLength, internalHeight>& internalNoiseMap,
-            StealthTileMap::TileMapF<width, length, height>& generatedNoiseMap, const TileMapF<scaleX>& attenuationsX,
-            const TileMapF<scaleY>& attenuationsY, const TileMapF<scaleZ>& attenuationsZ) {
+            const InternalNoiseType& internalNoiseMap, StealthTileMap::TileMapF<width, length, height>& generatedNoiseMap,
+            const TileMapF<scaleX>& attenuationsX, const TileMapF<scaleY>& attenuationsY, const TileMapF<scaleZ>& attenuationsZ) {
             // Only fill the part of the tile that is valid.
             const int maxValidX = std::min(width - fillStartX, scaleX);
             const int maxValidY = std::min(length - fillStartY, scaleY);
             const int maxValidZ = std::min(height - fillStartZ, scaleZ);
             // Cache noise indices
-            const int topLeft0Index = internalX + internalY * internalNoiseMap.width() + internalZ * internalNoiseMap.area();
-            const int bottomLeft0Index = topLeft0Index + internalNoiseMap.width();
-            const int topLeft1Index = topLeft0Index + internalNoiseMap.area();
-            const int bottomLeft1Index = bottomLeft0Index + internalNoiseMap.area();
+            constexpr int internalWidth = ceilDivide(width, scaleX) + 1;
+            constexpr int internalLength = ceilDivide(length, scaleY) + 1;
+            constexpr int internalArea = internalWidth * internalLength;
+            const int topLeft0Index = internalX + internalY * internalWidth + internalZ * internalArea;
+            const int bottomLeft0Index = topLeft0Index + internalWidth;
+            const int topLeft1Index = topLeft0Index + internalArea;
+            const int bottomLeft1Index = bottomLeft0Index + internalArea;
             // Cache noise values
             float topLeft0 = internalNoiseMap(topLeft0Index);
             float topRight0 = internalNoiseMap(topLeft0Index + 1);
@@ -84,7 +86,7 @@ namespace StealthNoiseGenerator {
         constexpr int internalWidth = ceilDivide(width, scaleX) + 1;
         constexpr int internalLength = ceilDivide(length, scaleY) + 1;
         constexpr int internalHeight = ceilDivide(height, scaleZ) + 1;
-        const auto internalNoiseMap{std::move(generateInternalNoiseMap<internalWidth, internalLength, internalHeight>(distribution))};
+        const auto& internalNoiseMap{generateInternalNoiseMap<internalWidth, internalLength, internalHeight>(distribution)};
         // Interpolated noise
         StealthTileMap::TileMapF<width, length, height> generatedNoiseMap;
         // 3D noise map

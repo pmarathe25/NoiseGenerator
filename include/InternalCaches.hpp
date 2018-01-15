@@ -17,6 +17,20 @@ namespace StealthNoiseGenerator {
         // Attenuations cache
         template <int scale>
         static const StealthTileMap::TileMapF<scale> AttenuationsCache{std::move(generateAttenuations<scale>())};
+
+        template <int size>
+        static StealthTileMap::TileMapF<size> InternalNoiseMapCache{};
+
+        // Initialize with random values according to provided distribution
+        template <int width, int length = 1, int height = 1, typename Distribution>
+        constexpr const auto& generateInternalNoiseMap(Distribution& distribution) {
+            // Internal noise map should be large enough to fit tiles of size (scale, scale).
+            constexpr int size = width * length * height;
+            for (int i = 0; i < size; ++i) {
+                InternalNoiseMapCache<size>(i) = distribution(generator);
+            }
+            return InternalNoiseMapCache<size>;
+        }
     }
 } /* StealthWorldGenerator */
 

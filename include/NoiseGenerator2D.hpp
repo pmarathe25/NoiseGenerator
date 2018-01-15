@@ -18,17 +18,17 @@ namespace StealthNoiseGenerator {
             return nxy;
         }
 
-        template <int width, int length, int scaleX, int scaleY, int internalWidth, int internalLength>
+        template <int width, int length, int scaleX, int scaleY, typename InternalNoiseType>
         constexpr void fillSquare(int internalX, int internalY, int fillStartX, int fillStartY,
-            const StealthTileMap::TileMapF<internalWidth, internalLength>& internalNoiseMap,
-            StealthTileMap::TileMapF<width, length>& generatedNoiseMap, const TileMapF<scaleX>& attenuationsX,
-            const TileMapF<scaleY>& attenuationsY) {
+            const InternalNoiseType& internalNoiseMap, StealthTileMap::TileMapF<width, length>& generatedNoiseMap,
+            const TileMapF<scaleX>& attenuationsX, const TileMapF<scaleY>& attenuationsY) {
             // Only fill the part of the tile that is valid.
             const int maxValidX = std::min(width - fillStartX, scaleX);
             const int maxValidY = std::min(length - fillStartY, scaleY);
             // Cache noise indices
-            const int topLeftIndex = internalX + internalY * internalNoiseMap.width();
-            const int bottomLeftIndex = topLeftIndex + internalNoiseMap.width();
+            constexpr int internalWidth = ceilDivide(width, scaleX) + 1;
+            const int topLeftIndex = internalX + internalY * internalWidth;
+            const int bottomLeftIndex = topLeftIndex + internalWidth;
             // Cache noise values
             float topLeft = internalNoiseMap(topLeftIndex);
             float topRight = internalNoiseMap(topLeftIndex + 1);
@@ -65,7 +65,7 @@ namespace StealthNoiseGenerator {
         // Generate a new internal noise map.
         constexpr int internalWidth = ceilDivide(width, scaleX) + 1;
         constexpr int internalLength = ceilDivide(length, scaleY) + 1;
-        const auto internalNoiseMap{std::move(generateInternalNoiseMap<internalWidth, internalLength>(distribution))};
+        const auto& internalNoiseMap{generateInternalNoiseMap<internalWidth, internalLength>(distribution)};
         // Interpolated noise
         StealthTileMap::TileMapF<width, length> generatedNoiseMap;
         // 2D noise map
