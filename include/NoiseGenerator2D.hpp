@@ -1,7 +1,7 @@
 #ifndef NOISE_GENERATOR_2D_H
 #define NOISE_GENERATOR_2D_H
 #include "NoiseGeneratorUtil.hpp"
-#include "AttenuationsCache.hpp"
+#include "InternalCaches.hpp"
 #include "TileMap/TileMap.hpp"
 #include <stealthutil>
 #include <random>
