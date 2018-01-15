@@ -11,13 +11,13 @@ namespace StealthNoiseGenerator {
         constexpr float interpolate3D(float topLeft0, float topRight0, float bottomLeft0, float bottomRight0,
             float topLeft1, float topRight1, float bottomLeft1, float bottomRight1,
             float attenuationX, float attenuationY, float attenuationZ) noexcept {
-                // Interpolate bottom layer
-                float nz0 = interpolate2D(topLeft0, topRight0, bottomLeft0, bottomRight0, attenuationX, attenuationY);
-                float nz1 = interpolate2D(topLeft1, topRight1, bottomLeft1, bottomRight1, attenuationX, attenuationY);
-                // Interpolate between two layers
-                float nxyz = interpolate1D(nz0, nz1, attenuationZ);
-                return nxyz;
-            }
+            // Interpolate bottom layer
+            float nz0 = interpolate2D(topLeft0, topRight0, bottomLeft0, bottomRight0, attenuationX, attenuationY);
+            float nz1 = interpolate2D(topLeft1, topRight1, bottomLeft1, bottomRight1, attenuationX, attenuationY);
+            // Interpolate between two layers
+            float nxyz = interpolate1D(nz0, nz1, attenuationZ);
+            return nxyz;
+        }
 
         template <int width, int length, int height, int scaleX, int scaleY, int scaleZ, int internalWidth, int internalLength, int internalHeight>
         constexpr void fillCube(int internalX, int internalY, int internalZ, int fillStartX, int fillStartY, int fillStartZ,
@@ -62,7 +62,8 @@ namespace StealthNoiseGenerator {
                 index += generatedNoiseMap.area() - maxValidY * generatedNoiseMap.width();
             }
         }
-    }
+
+    } /* Anonymous namespace */
 
     template <int width, int length, int height, int scaleX, int scaleY, int scaleZ, typename Distribution
         = std::uniform_real_distribution<float>>

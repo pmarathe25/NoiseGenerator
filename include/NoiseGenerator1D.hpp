@@ -29,7 +29,8 @@ namespace StealthNoiseGenerator {
                 generatedNoiseMap(fillStartX + i) = interpolate1D(left, right, attenuationX);
             }
         }
-    }
+        
+    } /* Anonymous namespace */
 
     template <int width, int scaleX, typename Distribution = std::uniform_real_distribution<float>>
     constexpr StealthTileMap::TileMapF<width> generate(Distribution&& distribution = std::uniform_real_distribution{0.0f, 1.0f}) {

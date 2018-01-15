@@ -48,7 +48,8 @@ namespace StealthNoiseGenerator {
                 index += generatedNoiseMap.width() - maxValidX;
             }
         }
-    }
+
+    } /* Anonymous namespace */
 
     template <int width, int length, int scaleX, int scaleY, typename Distribution = std::uniform_real_distribution<float>>
     constexpr StealthTileMap::TileMapF<width, length> generate(Distribution&& distribution = std::uniform_real_distribution{0.0f, 1.0f}) {
