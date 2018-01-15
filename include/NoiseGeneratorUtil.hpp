@@ -21,7 +21,7 @@ namespace StealthNoiseGenerator {
         constexpr auto generateInternalNoiseMap(Distribution& distribution) {
             // Internal noise map should be large enough to fit tiles of size (scale, scale).
             StealthTileMap::TileMapF<internalWidth, internalLength, internalHeight> internalNoiseMap;
-            for (int i = internalNoiseMap.size() - 1; i >= 0; --i) {
+            for (int i = 0; i < internalNoiseMap.size(); ++i) {
                 internalNoiseMap(i) = distribution(generator);
             }
             return internalNoiseMap;
