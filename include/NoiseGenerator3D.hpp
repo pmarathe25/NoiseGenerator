@@ -76,9 +76,9 @@ namespace StealthNoiseGenerator {
         } else if constexpr (width == 1) {
             return generate<length, height, scaleY, scaleZ>(std::forward<Distribution&&>(distribution));
         }
-        const auto& attenuationsX = AttenuationsCache<scaleX>;
-        const auto& attenuationsY = AttenuationsCache<scaleY>;
-        const auto& attenuationsZ = AttenuationsCache<scaleZ>;
+        const auto& attenuationsX{AttenuationsCache<scaleX>};
+        const auto& attenuationsY{AttenuationsCache<scaleY>};
+        const auto& attenuationsZ{AttenuationsCache<scaleZ>};
         // Generate a new internal noise map.
         constexpr int internalWidth = ceilDivide(width, scaleX) + 1;
         constexpr int internalLength = ceilDivide(length, scaleY) + 1;
