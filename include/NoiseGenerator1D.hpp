@@ -33,10 +33,10 @@ namespace StealthNoiseGenerator {
     template <int width, int scaleX, typename Distribution = std::uniform_real_distribution<float>>
     constexpr StealthTileMap::TileMapF<width> generate(Distribution&& distribution = std::uniform_real_distribution{0.0f, 1.0f}) {
         // Get attenuation information
-        const auto attenuationsX = AttenuationsCache<scaleX>;
+        const auto& attenuationsX = AttenuationsCache<scaleX>;
         // Generate a new internal noise map.
         constexpr int internalWidth = ceilDivide(width, scaleX) + 1;
-        const auto internalNoiseMap = generateInternalNoiseMap<internalWidth>(distribution);
+        const auto internalNoiseMap{std::move(generateInternalNoiseMap<internalWidth>(distribution))};
         // Interpolated noise
         StealthTileMap::TileMapF<width> generatedNoiseMap;
         // 1D noise map

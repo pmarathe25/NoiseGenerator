@@ -57,12 +57,12 @@ namespace StealthNoiseGenerator {
             return generate<length, scaleY>(std::forward<Distribution&&>(distribution));
         }
         // Get attenuation information
-        const auto attenuationsX = AttenuationsCache<scaleX>;
-        const auto attenuationsY = AttenuationsCache<scaleY>;
+        const auto& attenuationsX = AttenuationsCache<scaleX>;
+        const auto& attenuationsY = AttenuationsCache<scaleY>;
         // Generate a new internal noise map.
         constexpr int internalWidth = ceilDivide(width, scaleX) + 1;
         constexpr int internalLength = ceilDivide(length, scaleY) + 1;
-        const auto internalNoiseMap = generateInternalNoiseMap<internalWidth, internalLength>(distribution);
+        const auto internalNoiseMap{std::move(generateInternalNoiseMap<internalWidth, internalLength>(distribution))};
         // Interpolated noise
         StealthTileMap::TileMapF<width, length> generatedNoiseMap;
         // 2D noise map
