@@ -34,7 +34,7 @@ int main() {
 
     // float smoothness = 0.0f;
 
-    StealthTileMap::TileMapF<WINDOW_X, WINDOW_Y, NUM_LAYERS> noise{};
+    StealthTileMap::TileMapF<WINDOW_X, WINDOW_Y, NUM_LAYERS> noise;
     while (window.isOpen()) {
         auto start = std::chrono::steady_clock::now();
 
