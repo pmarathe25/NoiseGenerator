@@ -6,12 +6,13 @@
 #include <random>
 #include <chrono>
 
+#include <iostream>
+
 namespace StealthNoiseGenerator {
     static std::default_random_engine DefaultGenerator{};
     static std::uniform_real_distribution DefaultDistribution{0.0f, 1.0f};
     namespace {
         using StealthTileMap::TileMapF;
-
 
         // Attenuations cache
         template <int scale>

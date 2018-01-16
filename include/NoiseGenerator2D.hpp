@@ -17,10 +17,11 @@ namespace StealthNoiseGenerator {
             return nxy;
         }
 
-        template <int width, int length, int scaleX, int scaleY, typename InternalNoiseType>
+        template <int width, int length, typename overwrite, int scaleX, int scaleY,
+            typename InternalNoiseType, typename GeneratedNoiseType>
         constexpr void fillSquare(int internalX, int internalY, int fillStartX, int fillStartY,
-            const InternalNoiseType& internalNoiseMap, TileMapF<width, length>& generatedNoiseMap,
-            const TileMapF<scaleX>& attenuationsX, const TileMapF<scaleY>& attenuationsY) {
+            const InternalNoiseType& internalNoiseMap, GeneratedNoiseType& generatedNoiseMap,
+            const TileMapF<scaleX>& attenuationsX, const TileMapF<scaleY>& attenuationsY, float multiplier = 1.0f) {
             // Only fill the part of the tile that is valid.
             const int maxValidX = std::min(width - fillStartX, scaleX);
             const int maxValidY = std::min(length - fillStartY, scaleY);
@@ -29,10 +30,10 @@ namespace StealthNoiseGenerator {
             const int topLeftIndex = internalX + internalY * internalWidth;
             const int bottomLeftIndex = topLeftIndex + internalWidth;
             // Cache noise values
-            float topLeft = internalNoiseMap(topLeftIndex);
-            float topRight = internalNoiseMap(topLeftIndex + 1);
-            float bottomLeft = internalNoiseMap(bottomLeftIndex);
-            float bottomRight = internalNoiseMap(bottomLeftIndex + 1);
+            float topLeft = internalNoiseMap[topLeftIndex];
+            float topRight = internalNoiseMap[topLeftIndex + 1];
+            float bottomLeft = internalNoiseMap[bottomLeftIndex];
+            float bottomRight = internalNoiseMap[bottomLeftIndex + 1];
             // Loop over one interpolation kernel tile.
             int index = fillStartX + fillStartY * generatedNoiseMap.width();
             for (int j = 0; j < maxValidY; ++j) {
@@ -40,8 +41,13 @@ namespace StealthNoiseGenerator {
                 for (int i = 0; i < maxValidX; ++i) {
                     float attenuationX = attenuationsX(i);
                     // Interpolate based on the 4 surrounding internal noise points.
-                    generatedNoiseMap(index++) = interpolate2D(topLeft, topRight, bottomLeft,
-                        bottomRight, attenuationX, attenuationY);
+                    if constexpr (overwrite::value) {
+                        generatedNoiseMap[index++] = interpolate2D(topLeft, topRight, bottomLeft,
+                            bottomRight, attenuationX, attenuationY);
+                    } else {
+                        generatedNoiseMap[index++] += interpolate2D(topLeft, topRight, bottomLeft,
+                            bottomRight, attenuationX, attenuationY) * multiplier;
+                    }
                 }
                 // Wrap around to the first element of the next row.
                 index += generatedNoiseMap.width() - maxValidX;
@@ -50,13 +56,15 @@ namespace StealthNoiseGenerator {
 
     } /* Anonymous namespace */
 
-    template <int width, int length, int scaleX, int scaleY, typename Distribution = decltype(DefaultDistribution)>
-    constexpr TileMapF<width, length> generate(Distribution&& distribution = DefaultDistribution) {
+    template <int width, int length, int scaleX, int scaleY, typename overwrite = std::true_type,
+        typename Distribution = decltype(DefaultDistribution), typename GeneratedNoiseType>
+    constexpr GeneratedNoiseType& generate(GeneratedNoiseType& generatedNoiseMap, Distribution&& distribution
+        = DefaultDistribution, float multiplier = 1.0f) {
         // Generate 1D noise if there's only 1 dimension.
         if constexpr (length == 1) {
-            return generate<width, scaleX>(std::forward<Distribution&&>(distribution));
+            return generate<width, scaleX, overwrite>(generatedNoiseMap, std::forward<Distribution&&>(distribution), multiplier);
         } else if constexpr (width == 1) {
-            return generate<length, scaleY>(std::forward<Distribution&&>(distribution));
+            return generate<length, scaleY, overwrite>(generatedNoiseMap, std::forward<Distribution&&>(distribution), multiplier);
         }
         // Get attenuation information
         const auto& attenuationsX{AttenuationsCache<scaleX>};
@@ -65,15 +73,14 @@ namespace StealthNoiseGenerator {
         constexpr int internalWidth = ceilDivide(width, scaleX) + 1;
         constexpr int internalLength = ceilDivide(length, scaleY) + 1;
         const auto& internalNoiseMap{generateInternalNoiseMap<internalWidth, internalLength>(distribution)};
-        // Interpolated noise
-        TileMapF<width, length> generatedNoiseMap;
         // 2D noise map
         int fillStartX = 0, fillStartY = 0;
         for (int j = 0; j < internalLength - 1; ++j) {
             fillStartX = 0;
             for (int i = 0; i < internalWidth - 1; ++i) {
                 // 2D noise unit
-                fillSquare(i, j, fillStartX, fillStartY, internalNoiseMap, generatedNoiseMap, attenuationsX, attenuationsY);
+                fillSquare<width, length, overwrite>(i, j, fillStartX, fillStartY,
+                    internalNoiseMap, generatedNoiseMap, attenuationsX, attenuationsY, multiplier);
                 fillStartX += scaleX;
             }
             fillStartY += scaleY;
@@ -82,19 +89,30 @@ namespace StealthNoiseGenerator {
         return generatedNoiseMap;
     }
 
-    template <int width, int length, int scaleX, int scaleY, int numOctaves = 8, typename Distribution>
-    constexpr TileMapF<width, length> generateOctavesImpl(Distribution&& distribution, float multiplier, float decayFactor) {
-        // This multiplier should equal the last one if this is the final octave.
-        if constexpr (numOctaves == 1) return (multiplier / decayFactor) * generate<width, length, scaleX, scaleY>(std::forward<Distribution&&>(distribution));
-        else return multiplier * generate<width, length, scaleX, scaleY>(std::forward<Distribution&&>(distribution))
-            + generateOctavesImpl<width, length, ceilDivide(scaleX, 2), ceilDivide(scaleY, 2),
-            numOctaves - 1>(std::forward<Distribution&&>(distribution), multiplier * decayFactor, decayFactor);
+    template <int width, int length, int scaleX, int scaleY, int numOctaves = 8, typename Distribution, typename GeneratedNoiseType>
+    constexpr void generateOctaves2DImpl(GeneratedNoiseType& generatedNoiseMap, Distribution&& distribution, float multiplier, float decayFactor) {
+        if constexpr (numOctaves == 1) {
+            // This multiplier should equal the last one if this is the final octave.
+            generate<width, length, scaleX, scaleY, std::false_type>(generatedNoiseMap, std::forward<Distribution&&>(distribution), (multiplier / decayFactor));
+        } else {
+            // First generate this layer...
+            generate<width, length, scaleX, scaleY, std::false_type>(generatedNoiseMap, std::forward<Distribution&&>(distribution), multiplier);
+            // ...then generate the next octaves.
+            generateOctaves2DImpl<width, length, ceilDivide(scaleX, 2), ceilDivide(scaleY, 2), numOctaves - 1>
+                (generatedNoiseMap, std::forward<Distribution&&>(distribution), multiplier * decayFactor, decayFactor);
+        }
     }
 
     // Convenience overloads
-    template <int width, int length, int scaleX, int scaleY, int numOctaves = 8, typename Distribution = decltype(DefaultDistribution)>
-    constexpr TileMapF<width, length> generateOctaves(Distribution&& distribution = DefaultDistribution, float multiplier = 0.5f, float decayFactor = 0.5f) {
-        return generateOctavesImpl<width, length, scaleX, scaleY, numOctaves>(std::forward<Distribution&&>(distribution), multiplier, decayFactor);
+    template <int width, int length, int scaleX, int scaleY, int numOctaves = 8, typename overwrite
+        = std::true_type, typename Distribution = decltype(DefaultDistribution), typename GeneratedNoiseType>
+    constexpr GeneratedNoiseType& generateOctaves(GeneratedNoiseType& generatedNoiseMap,
+        Distribution&& distribution = DefaultDistribution, float multiplier = 0.5f, float decayFactor = 0.5f) {
+        if constexpr (overwrite::value) {
+            generatedNoiseMap = 0.0f;
+        }
+        generateOctaves2DImpl<width, length, scaleX, scaleY, numOctaves>(generatedNoiseMap, std::forward<Distribution&&>(distribution), multiplier, decayFactor);
+        return generatedNoiseMap;
     }
 } /* StealthNoiseGenerator */
 
