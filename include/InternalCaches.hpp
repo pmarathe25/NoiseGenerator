@@ -1,6 +1,5 @@
 #ifndef STEALTH_INTERPOLATION_H
 #define STEALTH_INTERPOLATION_H
-#define CURRENT_TIME std::chrono::system_clock::now().time_since_epoch().count()
 #include "TileMap/TileMap.hpp"
 #include <stealthutil>
 #include <random>
@@ -11,6 +10,11 @@
 namespace StealthNoiseGenerator {
     static std::default_random_engine DefaultGenerator{};
     static std::uniform_real_distribution DefaultDistribution{0.0f, 1.0f};
+
+    inline auto getCurrentTime() {
+        return std::chrono::system_clock::now().time_since_epoch().count();
+    }
+
     namespace {
         using StealthTileMap::TileMapF;
 
@@ -33,19 +37,18 @@ namespace StealthNoiseGenerator {
 
         // Initialize with random values according to provided distribution
         template <int width, int length = 1, int height = 1, typename Distribution,
-            typename Seed = decltype(CURRENT_TIME), typename Generator = decltype(DefaultGenerator)>
-        constexpr const auto& generateInternalNoiseMap(Distribution& distribution,
-            Seed&& desiredSeed = CURRENT_TIME, Generator& generator = DefaultGenerator) {
+            typename Seed, typename Generator = decltype(DefaultGenerator)>
+        constexpr const auto& generateInternalNoiseMap(Seed&& desiredSeed,
+            Distribution&& distribution, Generator&& generator = std::forward<Generator&&>(DefaultGenerator)) {
             // Internal noise map should be large enough to fit tiles of size (scale, scale).
             generator.seed(std::forward<Seed&&>(desiredSeed));
             constexpr int size = width * length * height;
             for (int i = 0; i < size; ++i) {
-                InternalNoiseMapCache<size>(i) = distribution(generator);
+                InternalNoiseMapCache<size>[i] = distribution(generator);
             }
             return InternalNoiseMapCache<size>;
         }
     } /* Anonymous namespace */
 } /* StealthWorldGenerator */
 
-#undef CURRENT_TIME
 #endif

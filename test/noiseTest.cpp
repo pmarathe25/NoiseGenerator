@@ -38,7 +38,7 @@ int main() {
     while (window.isOpen()) {
         auto start = std::chrono::steady_clock::now();
 
-        StealthNoiseGenerator::generateOctaves<WINDOW_X, WINDOW_Y, NUM_LAYERS, 200, 200, 100, 8>(noise, std::normal_distribution(0.5f, 1 / 6.0f));
+        StealthNoiseGenerator::generateOctaves<WINDOW_X, WINDOW_Y, NUM_LAYERS, 200, 200, 100, 8>(noise);
 
         auto end = std::chrono::steady_clock::now();
         totalTime += std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
