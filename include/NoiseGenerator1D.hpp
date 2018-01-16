@@ -1,6 +1,5 @@
 #ifndef NOISE_GENERATOR_1D_H
 #define NOISE_GENERATOR_1D_H
-#include "NoiseGeneratorUtil.hpp"
 #include "InternalCaches.hpp"
 #include "TileMap/TileMap.hpp"
 #include <stealthutil>
@@ -16,7 +15,7 @@ namespace StealthNoiseGenerator {
 
         template <int width, int scaleX, typename InternalNoiseType>
         constexpr void fillLine(int internalX, int fillStartX, const InternalNoiseType& internalNoiseMap,
-            StealthTileMap::TileMapF<width>& generatedNoiseMap, const TileMapF<scaleX>& attenuationsX) {
+            TileMapF<width>& generatedNoiseMap, const TileMapF<scaleX>& attenuationsX) {
             // Only fill the part of the length that is valid.
             const int maxValidX = std::min(width - fillStartX, scaleX);
             // Cache noise values
@@ -32,15 +31,15 @@ namespace StealthNoiseGenerator {
 
     } /* Anonymous namespace */
 
-    template <int width, int scaleX, typename Distribution = std::uniform_real_distribution<float>>
-    constexpr StealthTileMap::TileMapF<width> generate(Distribution&& distribution = std::uniform_real_distribution{0.0f, 1.0f}) {
+    template <int width, int scaleX, typename Distribution = decltype(DefaultDistribution)>
+    constexpr TileMapF<width> generate(Distribution&& distribution = DefaultDistribution) {
         // Get attenuation information
         const auto& attenuationsX{AttenuationsCache<scaleX>};
         // Generate a new internal noise map.
         constexpr int internalWidth = ceilDivide(width, scaleX) + 1;
         const auto& internalNoiseMap{generateInternalNoiseMap<internalWidth>(distribution)};
         // Interpolated noise
-        StealthTileMap::TileMapF<width> generatedNoiseMap;
+        TileMapF<width> generatedNoiseMap;
         // 1D noise map
         int fillStartX = 0;
         for (int i = 0; i < internalWidth - 1; ++i) {
@@ -52,8 +51,8 @@ namespace StealthNoiseGenerator {
         return generatedNoiseMap;
     }
 
-    template <int width, int scaleX, int numOctaves = 8, typename Distribution = std::uniform_real_distribution<float>>
-    constexpr StealthTileMap::TileMapF<width> generateOctavesImpl(Distribution&& distribution, float multiplier, float decayFactor) {
+    template <int width, int scaleX, int numOctaves = 8, typename Distribution>
+    constexpr TileMapF<width> generateOctavesImpl(Distribution&& distribution, float multiplier, float decayFactor) {
         // This multiplier should equal the last one if this is the final octave.
         if constexpr (numOctaves == 1) return (multiplier / decayFactor) * generate<width, scaleX>(std::forward<Distribution&&>(distribution));
         else return multiplier * generate<width, scaleX>(std::forward<Distribution&&>(distribution)) + generateOctavesImpl<width, ceilDivide(scaleX, 2),
@@ -61,22 +60,9 @@ namespace StealthNoiseGenerator {
     }
 
     // Convenience overloads
-    template <int width, int scaleX, int numOctaves = 8, typename Distribution = std::uniform_real_distribution<float>>
-    constexpr StealthTileMap::TileMapF<width> generateOctaves(Distribution&& distribution, float multiplier = 0.5f) {
-        return generateOctavesImpl<width, scaleX, numOctaves>
-            (std::forward<Distribution&&>(distribution), multiplier, findDecayFactor(multiplier));
-    }
-
-    template <int width, int scaleX, int numOctaves = 8, typename Distribution = std::uniform_real_distribution<float>>
-    constexpr StealthTileMap::TileMapF<width> generateOctaves(float multiplier = 0.5f) {
-        return generateOctavesImpl<width, scaleX, numOctaves>
-            (std::uniform_real_distribution{0.0f, 1.0f}, multiplier, findDecayFactor(multiplier));
-    }
-
-    template <int width, int scaleX, int numOctaves = 8, typename Distribution = std::uniform_real_distribution<float>>
-    constexpr StealthTileMap::TileMapF<width> generateOctaves(float multiplier, float decayFactor) {
-        return generateOctavesImpl<width, scaleX, numOctaves>
-            (std::uniform_real_distribution{0.0f, 1.0f}, multiplier, decayFactor);
+    template <int width, int scaleX, int numOctaves = 8, typename Distribution = decltype(DefaultDistribution)>
+    constexpr TileMapF<width> generateOctaves(Distribution&& distribution = DefaultDistribution, float multiplier = 0.5f, float decayFactor = 0.5f) {
+        return generateOctavesImpl<width, scaleX, numOctaves>(std::forward<Distribution&&>(distribution), multiplier, decayFactor);
     }
 } /* StealthNoiseGenerator */
 
