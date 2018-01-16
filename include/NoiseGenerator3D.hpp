@@ -78,18 +78,19 @@ namespace StealthNoiseGenerator {
     template <int width, int length, int height, int scaleX, int scaleY, int scaleZ, typename overwrite
         = std::true_type, typename Seed = decltype(getCurrentTime()), typename Distribution
         = decltype(DefaultDistribution), typename GeneratedNoiseType>
-    constexpr GeneratedNoiseType& generate(GeneratedNoiseType& generatedNoiseMap, Seed&& seed = getCurrentTime(),
-        Distribution&& distribution = std::forward<Distribution&&>(DefaultDistribution), float multiplier = 1.0f) {
+    constexpr GeneratedNoiseType& generate(GeneratedNoiseType& generatedNoiseMap,
+        Distribution&& distribution = std::forward<Distribution&&>(DefaultDistribution),
+        Seed&& seed = getCurrentTime(), float multiplier = 1.0f) {
         // Generate 2D noise if there are only 2 dimensions.
         if constexpr (height == 1) {
-            return generate<width, length, scaleX, scaleY, overwrite>(generatedNoiseMap, std::forward<Seed&&>(seed),
-                std::forward<Distribution&&>(distribution), multiplier);
+            return generate<width, length, scaleX, scaleY, overwrite>(generatedNoiseMap,
+                std::forward<Distribution&&>(distribution), std::forward<Seed&&>(seed), multiplier);
         } else if constexpr (length == 1) {
-            return generate<width, height, scaleX, scaleZ, overwrite>(generatedNoiseMap, std::forward<Seed&&>(seed),
-                std::forward<Distribution&&>(distribution), multiplier);
+            return generate<width, height, scaleX, scaleZ, overwrite>(generatedNoiseMap,
+                std::forward<Distribution&&>(distribution), std::forward<Seed&&>(seed), multiplier);
         } else if constexpr (width == 1) {
-            return generate<length, height, scaleY, scaleZ, overwrite>(generatedNoiseMap, std::forward<Seed&&>(seed),
-                std::forward<Distribution&&>(distribution), multiplier);
+            return generate<length, height, scaleY, scaleZ, overwrite>(generatedNoiseMap,
+                std::forward<Distribution&&>(distribution), std::forward<Seed&&>(seed), multiplier);
         }
         const auto& attenuationsX{AttenuationsCache<scaleX>};
         const auto& attenuationsY{AttenuationsCache<scaleY>};
@@ -127,11 +128,11 @@ namespace StealthNoiseGenerator {
         if constexpr (numOctaves == 1) {
             // This multiplier should equal the last one if this is the final octave.
             generate<width, length, height, scaleX, scaleY, scaleZ, std::false_type>(generatedNoiseMap,
-                std::forward<Seed&&>(seed), std::forward<Distribution&&>(distribution), (multiplier / decayFactor));
+                std::forward<Distribution&&>(distribution), std::forward<Seed&&>(seed), (multiplier / decayFactor));
         } else {
             // First generate this layer...
             generate<width, length, height, scaleX, scaleY, scaleZ, std::false_type>(generatedNoiseMap,
-                std::forward<Seed&&>(seed), std::forward<Distribution&&>(distribution), multiplier);
+                std::forward<Distribution&&>(distribution), std::forward<Seed&&>(seed), multiplier);
             // ...then generate the next octaves.
             generateOctaves3DImpl<width, length, height, ceilDivide(scaleX, 2), ceilDivide(scaleY, 2),
                 ceilDivide(scaleZ, 2), numOctaves - 1>(generatedNoiseMap, std::forward<Seed&&>(seed),
@@ -143,8 +144,9 @@ namespace StealthNoiseGenerator {
     template <int width, int length, int height, int scaleX, int scaleY, int scaleZ, int numOctaves = 8,
         typename overwrite = std::true_type, typename Seed = decltype(getCurrentTime()), typename Distribution
         = decltype(DefaultDistribution), typename GeneratedNoiseType>
-    constexpr GeneratedNoiseType generateOctaves(GeneratedNoiseType& generatedNoiseMap, Seed&& seed = getCurrentTime(),
-        Distribution&& distribution = std::forward<Distribution&&>(DefaultDistribution), float multiplier = 0.5f, float decayFactor = 0.5f) {
+    constexpr GeneratedNoiseType generateOctaves(GeneratedNoiseType& generatedNoiseMap,
+        Distribution&& distribution = std::forward<Distribution&&>(DefaultDistribution),
+        Seed&& seed = getCurrentTime(), float multiplier = 0.5f, float decayFactor = 0.5f) {
         if constexpr (overwrite::value) {
             generatedNoiseMap = 0.0f;
         }

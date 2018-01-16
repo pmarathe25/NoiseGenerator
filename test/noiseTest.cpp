@@ -10,8 +10,8 @@ using StealthColor::Color, StealthColor::applyPalette, StealthColor::GradientCol
 
 constexpr int WINDOW_X = 800;
 constexpr int WINDOW_Y = 800;
-constexpr int NUM_LAYERS = 1;
-constexpr int FRAMERATE = 0;
+constexpr int NUM_LAYERS = 60;
+constexpr int FRAMERATE = 60;
 
 const GradientColorPalette noisePalette{Color(0, 0, 0), Color(255, 255, 255)};
 
@@ -34,11 +34,11 @@ int main() {
 
     // float smoothness = 0.0f;
 
-    StealthTileMap::TileMapF<WINDOW_X, WINDOW_Y, NUM_LAYERS> noise;
+    StealthTileMap::TileMapF<WINDOW_X, WINDOW_Y, NUM_LAYERS> noise{};
     while (window.isOpen()) {
         auto start = std::chrono::steady_clock::now();
 
-        StealthNoiseGenerator::generateOctaves<WINDOW_X, WINDOW_Y, NUM_LAYERS, 200, 200, 100, 8>(noise);
+        StealthNoiseGenerator::generateOctaves<WINDOW_X, WINDOW_Y, NUM_LAYERS, 200, 200, 100, 8>(noise, std::normal_distribution(0.5f, 1 / 6.0f), 0);
 
         auto end = std::chrono::steady_clock::now();
         totalTime += std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
