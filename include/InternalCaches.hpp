@@ -3,17 +3,10 @@
 #include "TileMap/TileMap.hpp"
 #include <stealthutil>
 #include <random>
-#include <chrono>
-
-#include <iostream>
 
 namespace StealthNoiseGenerator {
     static std::default_random_engine DefaultGenerator{};
     static std::uniform_real_distribution DefaultDistribution{0.0f, 1.0f};
-
-    inline auto getCurrentTime() {
-        return std::chrono::system_clock::now().time_since_epoch().count();
-    }
 
     namespace {
         using StealthTileMap::TileMapF;

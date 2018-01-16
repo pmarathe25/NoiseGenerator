@@ -3,6 +3,7 @@
 #include "NoiseGenerator2D.hpp"
 #include "InternalCaches.hpp"
 #include "TileMap/TileMap.hpp"
+#include "NoiseGeneratorUtil.hpp"
 #include <stealthutil>
 #include <random>
 
@@ -72,7 +73,6 @@ namespace StealthNoiseGenerator {
                 index += generatedNoiseMap.area() - maxValidY * generatedNoiseMap.width();
             }
         }
-
     } /* Anonymous namespace */
 
     template <int width, int length, int height, int scaleX, int scaleY, int scaleZ, typename overwrite

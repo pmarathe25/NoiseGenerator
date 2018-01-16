@@ -2,6 +2,7 @@
 #define NOISE_GENERATOR_1D_H
 #include "InternalCaches.hpp"
 #include "TileMap/TileMap.hpp"
+#include "NoiseGeneratorUtil.hpp"
 #include <stealthutil>
 #include <random>
 
