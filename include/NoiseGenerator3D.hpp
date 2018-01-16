@@ -147,9 +147,7 @@ namespace StealthNoiseGenerator {
     constexpr GeneratedNoiseType generateOctaves(GeneratedNoiseType& generatedNoiseMap,
         Distribution&& distribution = std::forward<Distribution&&>(DefaultDistribution),
         Seed&& seed = getCurrentTime(), float multiplier = 0.5f, float decayFactor = 0.5f) {
-        if constexpr (overwrite::value) {
-            generatedNoiseMap = 0.0f;
-        }
+        if constexpr (overwrite::value) generatedNoiseMap = 0.0f;
         generateOctaves3DImpl<width, length, height, scaleX, scaleY, scaleZ, numOctaves>(generatedNoiseMap,
             std::forward<Seed&&>(seed), std::forward<Distribution&&>(distribution), multiplier, decayFactor);
         return generatedNoiseMap;
