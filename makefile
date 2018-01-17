@@ -10,9 +10,9 @@ INCLUDE = -I$(INCLUDEPATH)
 HEADERS = $(addprefix $(INCLUDEPATH)/, InternalCaches.hpp NoiseGenerator.hpp NoiseGeneratorUtil.hpp NoiseGenerator1D.hpp NoiseGenerator2D.hpp NoiseGenerator3D.hpp)
 # Compiler settings
 CXX = g++
-CFLAGS = -fPIC -c -std=c++17 $(INCLUDE) -O3 -Wpedantic -march=native -flto
-LFLAGS = -shared -flto -march=native
-TESTLFLAGS = -lstealthcolor -lsfml-graphics -lsfml-window -lsfml-system -pthread -flto -march=native
+CFLAGS = -fPIC -c -std=c++17 $(INCLUDE) -flto -O3 -Wpedantic -march=native
+LFLAGS = -shared -flto -O3 -march=native
+TESTLFLAGS = -lstealthcolor -lsfml-graphics -lsfml-window -lsfml-system -pthread -flto -O3 -march=native
 
 $(TESTDIR)/noiseTest: $(BUILDDIR)/noiseTest.o $(HEADERS) $(OBJS)
 	$(CXX) $(BUILDDIR)/noiseTest.o $(OBJS) $(TESTLFLAGS) -o $(TESTDIR)/noiseTest
