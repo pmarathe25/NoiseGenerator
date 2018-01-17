@@ -30,11 +30,11 @@ namespace StealthNoiseGenerator {
 
         // Initialize with random values according to provided distribution
         template <int width, int length = 1, int height = 1, typename Distribution,
-            typename Seed, typename Generator = decltype(DefaultGenerator)>
-        constexpr const auto& generateInternalNoiseMap(Seed&& desiredSeed,
-            Distribution&& distribution, Generator&& generator = std::forward<Generator&&>(DefaultGenerator)) {
+            typename Generator = decltype(DefaultGenerator)>
+        constexpr const auto& generateInternalNoiseMap(long desiredSeed, Distribution&& distribution,
+            Generator&& generator = std::forward<Generator&&>(DefaultGenerator)) {
             // Internal noise map should be large enough to fit tiles of size (scale, scale).
-            generator.seed(std::forward<Seed&&>(desiredSeed));
+            generator.seed(desiredSeed);
             constexpr int size = width * length * height;
             for (int i = 0; i < size; ++i) {
                 InternalNoiseMapCache<size>[i] = distribution(generator);
