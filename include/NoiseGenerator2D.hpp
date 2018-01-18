@@ -117,7 +117,7 @@ namespace StealthNoiseGenerator {
         = std::forward<Distribution&&>(DefaultDistribution), long seed = getCurrentTime(), float decayFactor = 0.5f) {
         // Zero if we need to overwrite
         if constexpr (overwrite::value) generatedNoiseMap = 0.0f;
-        // Generate!
+        // Generate and normalize!
         generatedNoiseMap /= generateOctaves2D_impl<width, length, scaleX, scaleY, numOctaves>(generatedNoiseMap,
             seed, std::forward<Distribution&&>(distribution), decayFactor);
         return generatedNoiseMap;
