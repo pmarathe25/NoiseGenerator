@@ -57,31 +57,29 @@ namespace StealthNoiseGenerator {
         return generatedNoiseMap;
     }
 
+    // Return a normalization factor
     template <int width, int scaleX, int numOctaves = 8, typename Distribution, typename GeneratedNoiseType>
-    constexpr void generateOctaves1DImpl(GeneratedNoiseType& generatedNoiseMap, long seed, Distribution&& distribution, float multiplier, float decayFactor) {
-        if constexpr (numOctaves == 1) {
-            // This multiplier should equal the last one if this is the final octave.
-            generate<width, scaleX, std::false_type>(generatedNoiseMap, std::forward<Distribution&&>(distribution),
-                seed, (multiplier / decayFactor));
-        } else {
-            // First generate this layer...
-            generate<width, scaleX, std::false_type>(generatedNoiseMap, std::forward<Distribution&&>(distribution),
-                seed, multiplier);
-            // ...then generate the next octaves.
-            generateOctaves1DImpl<width, ceilDivide(scaleX, 2), numOctaves - 1>(generatedNoiseMap, seed,
-                std::forward<Distribution&&>(distribution), multiplier * decayFactor, decayFactor);
-        }
+    constexpr float generateOctaves1D_impl(GeneratedNoiseType& generatedNoiseMap, long seed,
+        Distribution&& distribution, float decayFactor, float accumulator = 1.0f) {
+        // First generate this layer...
+        generate<width, scaleX, std::false_type>(generatedNoiseMap, std::forward<Distribution&&>(distribution),
+            seed, accumulator);
+        // ...then generate the next octaves.
+        if constexpr (numOctaves > 1) return accumulator + generateOctaves1D_impl<width, ceilDivide(scaleX, 2), numOctaves - 1>
+            (generatedNoiseMap, seed, std::forward<Distribution&&>(distribution), decayFactor, accumulator * decayFactor);
+        else return accumulator;
     }
 
     // Convenience overloads
     template <int width, int scaleX, int numOctaves = 8, typename overwrite = std::true_type,
         typename Distribution = decltype(DefaultDistribution), typename GeneratedNoiseType>
-    constexpr GeneratedNoiseType& generateOctaves(GeneratedNoiseType& generatedNoiseMap,
-        Distribution&& distribution = std::forward<Distribution&&>(DefaultDistribution),
-        long seed = getCurrentTime(), float multiplier = 0.5f, float decayFactor = 0.5f) {
+    constexpr GeneratedNoiseType& generateOctaves(GeneratedNoiseType& generatedNoiseMap, Distribution&& distribution
+        = std::forward<Distribution&&>(DefaultDistribution), long seed = getCurrentTime(), float decayFactor = 0.5f) {
+        // Zero if we need to overwrite
         if constexpr (overwrite::value) generatedNoiseMap = 0.0f;
-        generateOctaves1DImpl<width, scaleX, numOctaves>(generatedNoiseMap, seed,
-            std::forward<Distribution&&>(distribution), multiplier, decayFactor);
+        // Generate!
+        generatedNoiseMap /= generateOctaves1D_impl<width, scaleX, numOctaves>(generatedNoiseMap, seed,
+            std::forward<Distribution&&>(distribution), decayFactor);
         return generatedNoiseMap;
     }
 } /* StealthNoiseGenerator */

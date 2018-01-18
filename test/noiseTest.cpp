@@ -10,8 +10,8 @@ using StealthColor::Color, StealthColor::applyPalette, StealthColor::GradientCol
 
 constexpr int WINDOW_X = 800;
 constexpr int WINDOW_Y = 800;
-constexpr int NUM_LAYERS = 60;
-constexpr int FRAMERATE = 60;
+constexpr int NUM_LAYERS = 1;
+constexpr int FRAMERATE = 2;
 
 const GradientColorPalette noisePalette{Color(0, 0, 0), Color(255, 255, 255)};
 
@@ -38,7 +38,12 @@ int main() {
     while (window.isOpen()) {
         auto start = std::chrono::steady_clock::now();
 
-        StealthNoiseGenerator::generateOctaves<WINDOW_X, WINDOW_Y, NUM_LAYERS, 200, 200, 100, 8>(noise, std::normal_distribution(0.5f, 1 / 6.0f), 0);
+        StealthNoiseGenerator::generateOctaves<WINDOW_X, WINDOW_Y, NUM_LAYERS, 200, 200, 100, 8>(noise,
+            std::normal_distribution(0.5f, 1 / 6.0f), StealthNoiseGenerator::getCurrentTime(), 0.8f);
+        // StealthNoiseGenerator::generateOctaves<WINDOW_X, WINDOW_Y, 200, 200, 8>(noise,
+        //     std::normal_distribution(0.5f, 1 / 6.0f), StealthNoiseGenerator::getCurrentTime(), 0.5f);
+        // StealthNoiseGenerator::generateOctaves<WINDOW_X, 200, 8>(noise,
+        //     std::normal_distribution(0.5f, 1 / 6.0f), StealthNoiseGenerator::getCurrentTime(), 0.5f);
 
         auto end = std::chrono::steady_clock::now();
         totalTime += std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
