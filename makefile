@@ -12,7 +12,7 @@ HEADERS = $(addprefix $(INCLUDEPATH)/, InternalCaches.hpp NoiseGenerator.hpp Noi
 CXX = g++
 CFLAGS = -fPIC -c -std=c++17 $(INCLUDE) -flto -O3 -Wpedantic -march=native
 LFLAGS = -shared -flto -O3 -march=native
-TESTLFLAGS = -lstealthcolor -lsfml-graphics -lsfml-window -lsfml-system -pthread -flto -O3 -march=native
+TESTLFLAGS = -lstealthcolor -lsfml-graphics -lsfml-window -lsfml-system -flto -O3 -march=native
 
 $(TESTDIR)/noiseTest: $(BUILDDIR)/noiseTest.o $(HEADERS) $(OBJS)
 	$(CXX) $(BUILDDIR)/noiseTest.o $(OBJS) $(TESTLFLAGS) -o $(TESTDIR)/noiseTest
