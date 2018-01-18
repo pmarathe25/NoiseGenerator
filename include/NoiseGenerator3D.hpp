@@ -126,10 +126,13 @@ namespace StealthNoiseGenerator {
         generate<width, length, height, scaleX, scaleY, scaleZ, std::false_type>(generatedNoiseMap,
             std::forward<Distribution&&>(distribution), seed, accumulator);
         // ...then generate the next octaves.
-        if constexpr (numOctaves > 1) return accumulator + generateOctaves3D_impl<width, length, height, ceilDivide(scaleX, 2),
-            ceilDivide(scaleY, 2), ceilDivide(scaleZ, 2), numOctaves - 1>(generatedNoiseMap, seed,
-            std::forward<Distribution&&>(distribution), decayFactor, accumulator * decayFactor);
-        else return accumulator;
+        if constexpr (numOctaves > 1) {
+            return accumulator + generateOctaves3D_impl<width, length, height, ceilDivide(scaleX, 2),
+                ceilDivide(scaleY, 2), ceilDivide(scaleZ, 2), numOctaves - 1>(generatedNoiseMap, seed,
+                std::forward<Distribution&&>(distribution), decayFactor, accumulator * decayFactor);
+        } else {
+            return accumulator;
+        }
     }
 
     // Convenience overloads
