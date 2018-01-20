@@ -3,7 +3,6 @@
 #include "NoiseGenerator2D.hpp"
 #include "InternalCaches.hpp"
 #include "TileMap/TileMap.hpp"
-#include "NoiseGeneratorUtil.hpp"
 #include <stealthutil>
 #include <random>
 
@@ -31,8 +30,8 @@ namespace StealthNoiseGenerator {
             const int maxValidY = std::min(length - fillStartY, scaleY);
             const int maxValidZ = std::min(height - fillStartZ, scaleZ);
             // Cache noise indices
-            constexpr int internalWidth = ceilDivide(width, scaleX) + 1;
-            constexpr int internalLength = ceilDivide(length, scaleY) + 1;
+            constexpr int internalWidth = stealth::ceilDivide(width, scaleX) + 1;
+            constexpr int internalLength = stealth::ceilDivide(length, scaleY) + 1;
             constexpr int internalArea = internalWidth * internalLength;
             const int topLeft0Index = internalX + internalY * internalWidth + internalZ * internalArea;
             const int bottomLeft0Index = topLeft0Index + internalWidth;
@@ -76,7 +75,7 @@ namespace StealthNoiseGenerator {
     template <int width, int length, int height, int scaleX, int scaleY, int scaleZ, typename overwrite
         = std::true_type, typename Distribution = decltype(DefaultDistribution), typename GeneratedNoiseType>
     constexpr GeneratedNoiseType& generate(GeneratedNoiseType& generatedNoiseMap, Distribution&& distribution
-        = std::forward<Distribution&&>(DefaultDistribution), long seed = getCurrentTime(), float multiplier = 1.0f) {
+        = std::forward<Distribution&&>(DefaultDistribution), long seed = stealth::getCurrentTime(), float multiplier = 1.0f) {
         // Generate 2D noise if there are only 2 dimensions.
         if constexpr (height == 1) {
             return generate<width, length, scaleX, scaleY, overwrite>(generatedNoiseMap,
@@ -88,13 +87,20 @@ namespace StealthNoiseGenerator {
             return generate<length, height, scaleY, scaleZ, overwrite>(generatedNoiseMap,
                 std::forward<Distribution&&>(distribution), seed, multiplier);
         }
+        // TODO: Optimize even if scale is 1 in just a single dimension
+        if constexpr (scaleX == 1 && scaleY == 1 && scaleZ == 1) {
+            if constexpr (overwrite::value) generatedNoiseMap.randomize(std::forward<Distribution&&>(distribution), seed);
+            else generatedNoiseMap += GeneratedNoiseType::Random(std::forward<Distribution&&>(distribution), seed) * multiplier;
+            return generatedNoiseMap;
+        }
+        // Get attenuation information
         const auto& attenuationsX{AttenuationsCache<scaleX>};
         const auto& attenuationsY{AttenuationsCache<scaleY>};
         const auto& attenuationsZ{AttenuationsCache<scaleZ>};
         // Generate a new internal noise map.
-        constexpr int internalWidth = ceilDivide(width, scaleX) + 1;
-        constexpr int internalLength = ceilDivide(length, scaleY) + 1;
-        constexpr int internalHeight = ceilDivide(height, scaleZ) + 1;
+        constexpr int internalWidth = stealth::ceilDivide(width, scaleX) + 1;
+        constexpr int internalLength = stealth::ceilDivide(length, scaleY) + 1;
+        constexpr int internalHeight = stealth::ceilDivide(height, scaleZ) + 1;
         const auto& internalNoiseMap{generateInternalNoiseMap<internalWidth, internalLength, internalHeight>
             (seed, std::forward<Distribution&&>(distribution))};
         // 3D noise map
@@ -118,7 +124,7 @@ namespace StealthNoiseGenerator {
     }
 
     // Return a normalization factor
-    template <int width, int length, int height, int scaleX, int scaleY, int scaleZ, int numOctaves = 8,
+    template <int width, int length, int height, int scaleX, int scaleY, int scaleZ, int numOctaves = 6,
         typename Distribution, typename GeneratedNoiseType>
     constexpr float generateOctaves3D_impl(GeneratedNoiseType& generatedNoiseMap, long seed,
         Distribution&& distribution, float decayFactor, float accumulator = 1.0f) {
@@ -127,8 +133,8 @@ namespace StealthNoiseGenerator {
             std::forward<Distribution&&>(distribution), seed, accumulator);
         // ...then generate the next octaves.
         if constexpr (numOctaves > 1) {
-            return accumulator + generateOctaves3D_impl<width, length, height, ceilDivide(scaleX, 2),
-                ceilDivide(scaleY, 2), ceilDivide(scaleZ, 2), numOctaves - 1>(generatedNoiseMap, seed,
+            return accumulator + generateOctaves3D_impl<width, length, height, stealth::ceilDivide(scaleX, 2),
+                stealth::ceilDivide(scaleY, 2), stealth::ceilDivide(scaleZ, 2), numOctaves - 1>(generatedNoiseMap, seed,
                 std::forward<Distribution&&>(distribution), decayFactor, accumulator * decayFactor);
         } else {
             return accumulator;
@@ -136,10 +142,10 @@ namespace StealthNoiseGenerator {
     }
 
     // Convenience overloads
-    template <int width, int length, int height, int scaleX, int scaleY, int scaleZ, int numOctaves = 8,
+    template <int width, int length, int height, int scaleX, int scaleY, int scaleZ, int numOctaves = 6,
         typename overwrite = std::true_type, typename Distribution = decltype(DefaultDistribution), typename GeneratedNoiseType>
     constexpr GeneratedNoiseType& generateOctaves(GeneratedNoiseType& generatedNoiseMap, Distribution&& distribution
-        = std::forward<Distribution&&>(DefaultDistribution), long seed = getCurrentTime(), float decayFactor = 0.5f) {
+        = std::forward<Distribution&&>(DefaultDistribution), long seed = stealth::getCurrentTime(), float decayFactor = 0.5f) {
         // Zero if we need to overwrite
         if constexpr (overwrite::value) generatedNoiseMap = 0.0f;
         // Generate and normalize!

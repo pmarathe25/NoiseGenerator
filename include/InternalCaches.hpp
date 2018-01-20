@@ -5,8 +5,8 @@
 #include <random>
 
 namespace StealthNoiseGenerator {
-    static std::default_random_engine DefaultGenerator{};
-    static std::uniform_real_distribution DefaultDistribution{0.0f, 1.0f};
+    static inline std::mt19937 DefaultGenerator;
+    static inline std::uniform_real_distribution DefaultDistribution{0.0f, 1.0f};
 
     namespace {
         using StealthTileMap::TileMapF;
@@ -16,7 +16,7 @@ namespace StealthNoiseGenerator {
         constexpr TileMapF<scale> generateAttenuations() noexcept {
             TileMapF<scale> attenuations;
             for (int i = 0; i < scale; ++i) {
-                attenuations(i) = attenuationPolynomial((i + 0.5f) / scale);
+                attenuations(i) = stealth::attenuationPolynomial((i + 0.5f) / scale);
             }
             return attenuations;
         }
