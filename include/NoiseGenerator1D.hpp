@@ -41,7 +41,12 @@ namespace StealthNoiseGenerator {
         float multiplier = 1.0f) {
         if constexpr (scaleX == 1) {
             if constexpr (overwrite::value) generatedNoiseMap.randomize(std::forward<Distribution&&>(distribution), seed);
-            else generatedNoiseMap += GeneratedNoiseType::Random(std::forward<Distribution&&>(distribution), seed) * multiplier;
+            else {
+                DefaultGenerator.seed(seed);
+                for (int i = 0; i < generatedNoiseMap.size(); ++i) {
+                    generatedNoiseMap[i] += distribution(DefaultGenerator) * multiplier;
+                }
+            }
             return generatedNoiseMap;
         }
         // Get attenuation information

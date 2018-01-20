@@ -22,11 +22,11 @@ namespace StealthNoiseGenerator {
         }
 
         template <int scale>
-        static const TileMapF<scale> AttenuationsCache{std::move(generateAttenuations<scale>())};
+        static inline const TileMapF<scale> AttenuationsCache{std::move(generateAttenuations<scale>())};
 
         // Prevent extra allocations
         template <int size>
-        static TileMapF<size> InternalNoiseMapCache{};
+        static inline TileMapF<size> InternalNoiseMapCache{};
 
         // Initialize with random values according to provided distribution
         template <int width, int length = 1, int height = 1, typename Distribution,
