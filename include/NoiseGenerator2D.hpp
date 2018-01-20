@@ -74,12 +74,8 @@ namespace StealthNoiseGenerator {
         // TODO: Optimize even if scale is 1 in just a single dimension
         if constexpr (scaleX == 1 && scaleY == 1) {
             if constexpr (overwrite::value) generatedNoiseMap.randomize(std::forward<Distribution&&>(distribution), seed);
-            else {
-                DefaultGenerator.seed(seed);
-                for (int i = 0; i < generatedNoiseMap.size(); ++i) {
-                    generatedNoiseMap[i] += distribution(DefaultGenerator) * multiplier;
-                }
-            }
+            else generatedNoiseMap += GeneratedNoiseType::Random(std::forward<Distribution&&>(distribution),
+                seed, std::default_random_engine{}) * multiplier;
             return generatedNoiseMap;
         }
         // Get attenuation information

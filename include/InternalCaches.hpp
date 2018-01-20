@@ -5,10 +5,11 @@
 #include <random>
 
 namespace StealthNoiseGenerator {
-    static inline std::mt19937 DefaultGenerator;
-    static inline std::uniform_real_distribution DefaultDistribution{0.0f, 1.0f};
 
     namespace {
+        static inline std::mt19937 DefaultGenerator;
+        static inline std::uniform_real_distribution DefaultDistribution{0.0f, 1.0f};
+
         using StealthTileMap::TileMapF;
 
         // Attenuations cache
