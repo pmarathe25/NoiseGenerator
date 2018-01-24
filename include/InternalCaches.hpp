@@ -5,10 +5,9 @@
 #include <random>
 
 namespace StealthNoiseGenerator {
-
     namespace {
-        static inline std::mt19937 DefaultGenerator;
-        static inline std::uniform_real_distribution DefaultDistribution{0.0f, 1.0f};
+        std::mt19937 DefaultGenerator;
+        std::uniform_real_distribution DefaultDistribution{0.0f, 1.0f};
 
         using StealthTileMap::TileMapF;
 
@@ -23,11 +22,11 @@ namespace StealthNoiseGenerator {
         }
 
         template <int scale>
-        static inline const TileMapF<scale> AttenuationsCache{std::move(generateAttenuations<scale>())};
+        const TileMapF<scale> AttenuationsCache{std::move(generateAttenuations<scale>())};
 
         // Prevent extra allocations
         template <int size>
-        static inline TileMapF<size> InternalNoiseMapCache{};
+        TileMapF<size> InternalNoiseMapCache{};
 
         // Initialize with random values according to provided distribution
         template <int width, int length = 1, int height = 1, typename Distribution,
