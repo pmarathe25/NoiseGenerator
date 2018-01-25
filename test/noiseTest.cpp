@@ -38,6 +38,8 @@ int main() {
     while (window.isOpen()) {
         auto start = std::chrono::steady_clock::now();
 
+        // StealthNoiseGenerator::generateOctaves<WINDOW_X, WINDOW_Y, NUM_LAYERS, 200, 200, 100, 1>(noise,
+        //     std::normal_distribution{0.5f, 1 / 6.0f}, stealth::getCurrentTime());
         StealthNoiseGenerator::generateOctaves<WINDOW_X, WINDOW_Y, NUM_LAYERS, 200, 200, 100, 12>(noise,
             std::normal_distribution{0.5f, 1 / 6.0f}, stealth::getCurrentTime());
         // StealthNoiseGenerator::generateOctaves<WINDOW_X, WINDOW_Y, NUM_LAYERS, 200, 200, 100, 12>(noise,
@@ -69,7 +71,7 @@ int main() {
                     window.close();
                 }
             }
-            if constexpr (FRAMERATE > 0) stealth::sleepMS((long) 1000.0f / FRAMERATE);
+            if constexpr (FRAMERATE > 0) stealth::sleepMS((long) 1000.0f / FRAMERATE - std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count());
         }
     }
     std::cout << std::endl;

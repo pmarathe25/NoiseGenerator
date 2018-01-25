@@ -6,6 +6,10 @@
 
 namespace StealthNoiseGenerator {
     namespace {
+        constexpr float attenuationPolynomial(float distance) noexcept {
+            return (6 * pow(distance, 5) - 15 * pow(distance, 4) + 10 * pow(distance, 3));
+        }
+
         std::mt19937 DefaultGenerator;
         std::uniform_real_distribution DefaultDistribution{0.0f, 1.0f};
 
@@ -16,7 +20,7 @@ namespace StealthNoiseGenerator {
         constexpr TileMapF<scale> generateAttenuations() noexcept {
             TileMapF<scale> attenuations;
             for (int i = 0; i < scale; ++i) {
-                attenuations(i) = stealth::attenuationPolynomial(i / (float) scale);
+                attenuations(i) = attenuationPolynomial(i / (float) scale);
             }
             return attenuations;
         }
