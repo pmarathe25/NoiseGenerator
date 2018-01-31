@@ -19,16 +19,16 @@ namespace StealthNoiseGenerator {
             // Only fill the part of the length that is valid.
             const int maxValidX = std::min(width - fillStartX, scaleX);
             // Cache noise values
-            float left = internalNoiseMap[internalX];
-            float right = internalNoiseMap[internalX + 1];
+            float left = internalNoiseMap(internalX);
+            float right = internalNoiseMap(internalX + 1);
             // Loop over one interpolation kernel tile.
             for (int i = 0; i < maxValidX; ++i) {
-                float attenuationX = attenuationsX[i];
+                float attenuationX = attenuationsX(i);
                 // Interpolate based on the 2 surrounding internal noise points.
                 if constexpr (overwrite::value) {
-                    generatedNoiseMap[fillStartX + i] = interpolate1D(left, right, attenuationX);
+                    generatedNoiseMap(fillStartX + i) = interpolate1D(left, right, attenuationX);
                 } else {
-                    generatedNoiseMap[fillStartX + i] += interpolate1D(left, right, attenuationX) * multiplier;
+                    generatedNoiseMap(fillStartX + i) += interpolate1D(left, right, attenuationX) * multiplier;
                 }
             }
         }

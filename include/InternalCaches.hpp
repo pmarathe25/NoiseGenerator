@@ -41,7 +41,7 @@ namespace StealthNoiseGenerator {
             generator.seed(desiredSeed);
             constexpr int size = width * length * height;
             for (int i = 0; i < size; ++i) {
-                InternalNoiseMapCache<size>[i] = distribution(generator);
+                InternalNoiseMapCache<size>(i) = distribution(generator);
             }
             return InternalNoiseMapCache<size>;
         }

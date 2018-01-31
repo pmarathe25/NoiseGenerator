@@ -38,28 +38,28 @@ namespace StealthNoiseGenerator {
             const int topLeft1Index = topLeft0Index + internalArea;
             const int bottomLeft1Index = bottomLeft0Index + internalArea;
             // Cache noise values
-            float topLeft0 = internalNoiseMap[topLeft0Index];
-            float topRight0 = internalNoiseMap[topLeft0Index + 1];
-            float bottomLeft0 = internalNoiseMap[bottomLeft0Index];
-            float bottomRight0 = internalNoiseMap[bottomLeft0Index + 1];
-            float topLeft1 = internalNoiseMap[topLeft1Index];
-            float topRight1 = internalNoiseMap[topLeft1Index + 1];
-            float bottomLeft1 = internalNoiseMap[bottomLeft1Index];
-            float bottomRight1 = internalNoiseMap[bottomLeft1Index + 1];
+            float topLeft0 = internalNoiseMap(topLeft0Index);
+            float topRight0 = internalNoiseMap(topLeft0Index + 1);
+            float bottomLeft0 = internalNoiseMap(bottomLeft0Index);
+            float bottomRight0 = internalNoiseMap(bottomLeft0Index + 1);
+            float topLeft1 = internalNoiseMap(topLeft1Index);
+            float topRight1 = internalNoiseMap(topLeft1Index + 1);
+            float bottomLeft1 = internalNoiseMap(bottomLeft1Index);
+            float bottomRight1 = internalNoiseMap(bottomLeft1Index + 1);
             // Loop over one interpolation kernel tile.
             int index = fillStartX + fillStartY * generatedNoiseMap.width() + fillStartZ * generatedNoiseMap.area();
             for (int k = 0; k < maxValidZ; ++k) {
-                float attenuationZ = attenuationsZ[k];
+                float attenuationZ = attenuationsZ(k);
                 for (int j = 0; j < maxValidY; ++j) {
-                    float attenuationY = attenuationsY[j];
+                    float attenuationY = attenuationsY(j);
                     for (int i = 0; i < maxValidX; ++i) {
-                        float attenuationX = attenuationsX[i];
+                        float attenuationX = attenuationsX(i);
                         // Interpolate based on the 8 surrounding internal noise points.
                         if constexpr (overwrite::value) {
-                            generatedNoiseMap[index++] = interpolate3D(topLeft0, topRight0, bottomLeft0, bottomRight0,
+                            generatedNoiseMap(index++) = interpolate3D(topLeft0, topRight0, bottomLeft0, bottomRight0,
                                 topLeft1, topRight1, bottomLeft1, bottomRight1, attenuationX, attenuationY, attenuationZ);
                         } else {
-                            generatedNoiseMap[index++] += interpolate3D(topLeft0, topRight0, bottomLeft0, bottomRight0,
+                            generatedNoiseMap(index++) += interpolate3D(topLeft0, topRight0, bottomLeft0, bottomRight0,
                                 topLeft1, topRight1, bottomLeft1, bottomRight1, attenuationX, attenuationY, attenuationZ) * multiplier;
                         }
                     }

@@ -32,22 +32,22 @@ namespace StealthNoiseGenerator {
             const int topLeftIndex = internalX + internalY * internalWidth;
             const int bottomLeftIndex = topLeftIndex + internalWidth;
             // Cache noise values
-            float topLeft = internalNoiseMap[topLeftIndex];
-            float topRight = internalNoiseMap[topLeftIndex + 1];
-            float bottomLeft = internalNoiseMap[bottomLeftIndex];
-            float bottomRight = internalNoiseMap[bottomLeftIndex + 1];
+            float topLeft = internalNoiseMap(topLeftIndex);
+            float topRight = internalNoiseMap(topLeftIndex + 1);
+            float bottomLeft = internalNoiseMap(bottomLeftIndex);
+            float bottomRight = internalNoiseMap(bottomLeftIndex + 1);
             // Loop over one interpolation kernel tile.
             int index = fillStartX + fillStartY * generatedNoiseMap.width();
             for (int j = 0; j < maxValidY; ++j) {
-                float attenuationY = attenuationsY[j];
+                float attenuationY = attenuationsY(j);
                 for (int i = 0; i < maxValidX; ++i) {
-                    float attenuationX = attenuationsX[i];
+                    float attenuationX = attenuationsX(i);
                     // Interpolate based on the 4 surrounding internal noise points.
                     if constexpr (overwrite::value) {
-                        generatedNoiseMap[index++] = interpolate2D(topLeft, topRight, bottomLeft,
+                        generatedNoiseMap(index++) = interpolate2D(topLeft, topRight, bottomLeft,
                             bottomRight, attenuationX, attenuationY);
                     } else {
-                        generatedNoiseMap[index++] += interpolate2D(topLeft, topRight, bottomLeft,
+                        generatedNoiseMap(index++) += interpolate2D(topLeft, topRight, bottomLeft,
                             bottomRight, attenuationX, attenuationY) * multiplier;
                     }
                 }
