@@ -1,18 +1,21 @@
-BUILDDIR = build/
-BINDIR = ~/bin/
-TESTDIR = test/
-SRCDIR = src/
+include ../makefile.defines
+BUILDDIR = build
+BINDIR = ~/bin
+TESTDIR = test
+SRCDIR = src
+INCLUDEDIR = include
 # Objects
-TESTOBJS = $(addprefix $(BUILDDIR)/, noiseTest.o)
+TESTOBJS = $(call generate_obj_names,$(TESTDIR),$(BUILDDIR))
 # Headers
-INCLUDEPATH = include/
-INCLUDE = -I$(INCLUDEPATH)
-HEADERS = $(addprefix $(INCLUDEPATH)/, InternalCaches.hpp NoiseGenerator.hpp NoiseGenerator1D.hpp NoiseGenerator2D.hpp NoiseGenerator3D.hpp)
+INCLUDE = -I$(INCLUDEDIR)
+HEADERS = $(call find_headers,$(INCLUDEDIR))
 # Compiler settings
 CXX = g++
 CFLAGS = -fPIC -c -std=c++17 $(INCLUDE) -flto -O3 -Wpedantic -march=native
 LFLAGS = -shared -flto -O3 -march=native
 TESTLFLAGS = -lstealthcolor -lsfml-graphics -lsfml-window -lsfml-system -flto -O3 -march=native
+
+.PHONY: clean lib install uninstall
 
 $(TESTDIR)/noiseTest: $(BUILDDIR)/noiseTest.o $(HEADERS) $(OBJS)
 	$(CXX) $(BUILDDIR)/noiseTest.o $(OBJS) $(TESTLFLAGS) -o $(TESTDIR)/noiseTest
@@ -25,3 +28,9 @@ clean:
 
 test: $(TESTDIR)/noiseTest
 	$(TESTDIR)/noiseTest
+
+install:
+	$(call install_headers,$(INCLUDEDIR),NoiseGenerator,$(HEADERS))
+
+uninstall:
+	$(call uninstall_headers,NoiseGenerator)

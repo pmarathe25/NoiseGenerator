@@ -1,6 +1,6 @@
-#include "Color/ColorPalette.hpp"
-#include "NoiseGenerator/NoiseGenerator.hpp"
-#include <stealthutil>
+#include <Stealth/NoiseGenerator>
+#include <Stealth/Color>
+#include <Stealth/util>
 #include <SFML/Window.hpp>
 #include <SFML/Graphics.hpp>
 #include <functional>
@@ -34,22 +34,22 @@ int main() {
 
     // float smoothness = 0.0f;
 
-    StealthTileMap::TileMapF<WINDOW_X, WINDOW_Y, NUM_LAYERS> noise{};
+    Stealth::Math::Tensor3F<WINDOW_X, WINDOW_Y, NUM_LAYERS> noise{};
     while (window.isOpen()) {
         auto start = std::chrono::steady_clock::now();
 
         // StealthNoiseGenerator::generateOctaves<WINDOW_X, WINDOW_Y, NUM_LAYERS, 200, 200, 100, 1>(noise,
-        //     std::normal_distribution{0.5f, 1 / 6.0f}, stealth::getCurrentTime());
-        StealthNoiseGenerator::generateOctaves<WINDOW_X, WINDOW_Y, NUM_LAYERS, 200, 200, 100, 12>(noise,
-            std::normal_distribution{0.5f, 1 / 6.0f}, stealth::getCurrentTime());
+        //     std::normal_distribution{0.5f, 1 / 6.0f}, Stealth::getCurrentTime());
+        StealthNoiseGenerator::generateOctaves<WINDOW_X, WINDOW_Y, NUM_LAYERS, 200, 200, 100, 8>(noise,
+            std::normal_distribution{0.5f, 1 / 6.0f}, Stealth::getCurrentTime());
         // StealthNoiseGenerator::generateOctaves<WINDOW_X, WINDOW_Y, NUM_LAYERS, 200, 200, 100, 12>(noise,
-        //     std::uniform_real_distribution{0.0f, 1.0f}, stealth::getCurrentTime());
+        //     std::uniform_real_distribution{0.0f, 1.0f}, Stealth::getCurrentTime());
         // StealthNoiseGenerator::generateOctaves<WINDOW_X, WINDOW_Y, 200, 200, 12>(noise,
-        //     std::normal_distribution{0.5f, 1 / 6.0f}, stealth::getCurrentTime(), 0.5f);
+        //     std::normal_distribution{0.5f, 1 / 6.0f}, Stealth::getCurrentTime(), 0.5f);
         // StealthNoiseGenerator::generateOctaves<WINDOW_X, WINDOW_Y, 200, 200, 12>(noise,
-        //     std::uniform_real_distribution{0.0f, 1.0f}, stealth::getCurrentTime(), 0.5f);
+        //     std::uniform_real_distribution{0.0f, 1.0f}, Stealth::getCurrentTime(), 0.5f);
         // StealthNoiseGenerator::generateOctaves<WINDOW_X, 200, 8>(noise,
-        //     std::normal_distribution{0.5f, 1 / 6.0f}, stealth::getCurrentTime(), 0.5f);
+        //     std::normal_distribution{0.5f, 1 / 6.0f}, Stealth::getCurrentTime(), 0.5f);
 
         auto end = std::chrono::steady_clock::now();
         totalTime += std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
@@ -59,7 +59,7 @@ int main() {
         // Display each layer of noise on-screen.
         sf::Texture noiseTexture;
         for (int i = 0; i < NUM_LAYERS; ++i) {
-            sf::Sprite noiseSprite = spriteFromColorMap(StealthTileMap::layer(colorMap, i), noiseTexture);
+            sf::Sprite noiseSprite = spriteFromColorMap(Stealth::Math::layer(colorMap, i), noiseTexture);
             // Draw
             window.draw(noiseSprite);
             // Display.
@@ -71,7 +71,7 @@ int main() {
                     window.close();
                 }
             }
-            if constexpr (FRAMERATE > 0) stealth::sleepMS((long) 1000.0f / FRAMERATE - std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count());
+            if constexpr (FRAMERATE > 0) Stealth::sleepMS((long) 1000.0f / FRAMERATE - std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count());
         }
     }
     std::cout << std::endl;
