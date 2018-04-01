@@ -34,7 +34,7 @@ int main() {
 
     // float smoothness = 0.0f;
 
-    Stealth::Math::Tensor3F<WINDOW_X, WINDOW_Y, NUM_LAYERS> noise{};
+    Stealth::Tensor::Tensor3F<WINDOW_X, WINDOW_Y, NUM_LAYERS> noise{};
     while (window.isOpen()) {
         auto start = std::chrono::steady_clock::now();
 
@@ -59,7 +59,7 @@ int main() {
         // Display each layer of noise on-screen.
         sf::Texture noiseTexture;
         for (int i = 0; i < NUM_LAYERS; ++i) {
-            sf::Sprite noiseSprite = spriteFromColorMap(Stealth::Math::layer(colorMap, i), noiseTexture);
+            sf::Sprite noiseSprite = spriteFromColorMap(Stealth::Tensor::layer(colorMap, i), noiseTexture);
             // Draw
             window.draw(noiseSprite);
             // Display.

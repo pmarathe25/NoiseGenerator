@@ -22,7 +22,7 @@ namespace StealthNoiseGenerator {
             typename InternalNoiseType, typename GeneratedNoiseType>
         constexpr void fillSquare(int internalX, int internalY, int fillStartX, int fillStartY,
             const InternalNoiseType& internalNoiseMap, GeneratedNoiseType& generatedNoiseMap,
-            const Stealth::Math::Tensor3F<scaleX>& attenuationsX, const Stealth::Math::Tensor3F<scaleY>& attenuationsY,
+            const Stealth::Tensor::Tensor3F<scaleX>& attenuationsX, const Stealth::Tensor::Tensor3F<scaleY>& attenuationsY,
             float multiplier = 1.0f) {
             // Only fill the part of the tile that is valid.
             const int maxValidX = std::min(width - fillStartX, scaleX);

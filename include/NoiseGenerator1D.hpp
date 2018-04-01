@@ -15,7 +15,7 @@ namespace StealthNoiseGenerator {
 
         template <int width, typename overwrite, int scaleX, typename InternalNoiseType, typename GeneratedNoiseType>
         constexpr void fillLine(int internalX, int fillStartX, const InternalNoiseType& internalNoiseMap,
-            GeneratedNoiseType& generatedNoiseMap, const Stealth::Math::Tensor3F<scaleX>& attenuationsX, float multiplier = 1.0f) {
+            GeneratedNoiseType& generatedNoiseMap, const Stealth::Tensor::Tensor3F<scaleX>& attenuationsX, float multiplier = 1.0f) {
             // Only fill the part of the length that is valid.
             const int maxValidX = std::min(width - fillStartX, scaleX);
             // Cache noise values

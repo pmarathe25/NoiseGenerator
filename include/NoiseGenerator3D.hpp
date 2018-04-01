@@ -23,8 +23,8 @@ namespace StealthNoiseGenerator {
             int scaleY, int scaleZ, typename InternalNoiseType, typename GeneratedNoiseType>
         constexpr void fillCube(int internalX, int internalY, int internalZ, int fillStartX, int fillStartY, int fillStartZ,
             const InternalNoiseType& internalNoiseMap, GeneratedNoiseType& generatedNoiseMap,
-            const Stealth::Math::Tensor3F<scaleX>& attenuationsX, const Stealth::Math::Tensor3F<scaleY>& attenuationsY,
-            const Stealth::Math::Tensor3F<scaleZ>& attenuationsZ, float multiplier = 1.0f) {
+            const Stealth::Tensor::Tensor3F<scaleX>& attenuationsX, const Stealth::Tensor::Tensor3F<scaleY>& attenuationsY,
+            const Stealth::Tensor::Tensor3F<scaleZ>& attenuationsZ, float multiplier = 1.0f) {
             // Only fill the part of the tile that is valid.
             const int maxValidX = std::min(width - fillStartX, scaleX);
             const int maxValidY = std::min(length - fillStartY, scaleY);

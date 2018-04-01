@@ -13,12 +13,12 @@ namespace StealthNoiseGenerator {
         std::mt19937 DefaultGenerator;
         std::uniform_real_distribution DefaultDistribution{0.0f, 1.0f};
 
-        using Stealth::Math::Tensor3F;
+        using Stealth::Tensor::Tensor3F;
 
         // Attenuations cache
         template <int scale>
-        constexpr Stealth::Math::Tensor3F<scale> generateAttenuations() noexcept {
-            Stealth::Math::Tensor3F<scale> attenuations;
+        constexpr Stealth::Tensor::Tensor3F<scale> generateAttenuations() noexcept {
+            Stealth::Tensor::Tensor3F<scale> attenuations;
             for (int i = 0; i < scale; ++i) {
                 attenuations(i) = attenuationPolynomial(i / (float) scale);
             }
@@ -26,11 +26,11 @@ namespace StealthNoiseGenerator {
         }
 
         template <int scale>
-        const Stealth::Math::Tensor3F<scale> AttenuationsCache{std::move(generateAttenuations<scale>())};
+        const Stealth::Tensor::Tensor3F<scale> AttenuationsCache{std::move(generateAttenuations<scale>())};
 
         // Prevent extra allocations
         template <int size>
-        Stealth::Math::Tensor3F<size> InternalNoiseMapCache{};
+        Stealth::Tensor::Tensor3F<size> InternalNoiseMapCache{};
 
         // Initialize with random values according to provided distribution
         template <int width, int length = 1, int height = 1, typename Distribution,
