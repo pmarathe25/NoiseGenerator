@@ -20,7 +20,7 @@ namespace StealthNoiseGenerator {
             return nxyz;
         }
 
-        // Interpolate a cubic section among 8 corners. 
+        // Interpolate a cubic section among 8 corners.
         template <int width, int length, int height, typename overwrite, int scaleX,
             int scaleY, int scaleZ, typename InternalNoiseType, typename GeneratedNoiseType>
         constexpr void fillCube(int internalX, int internalY, int internalZ, int fillStartX, int fillStartY, int fillStartZ,
@@ -126,7 +126,7 @@ namespace StealthNoiseGenerator {
         return generatedNoiseMap;
     }
 
-    // Return a normalization factor
+    // Return a normalization factor and generate the noisemap in-place.
     template <int width, int length, int height, int scaleX, int scaleY, int scaleZ, int numOctaves = 6,
         typename Distribution, typename GeneratedNoiseType>
     constexpr float generateOctaves3D_impl(GeneratedNoiseType& generatedNoiseMap, long seed,

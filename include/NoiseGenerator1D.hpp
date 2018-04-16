@@ -14,7 +14,7 @@ namespace StealthNoiseGenerator {
             return nx;
         }
 
-        // Interpolate a line between 2 points. 
+        // Interpolate a line between 2 points.
         template <int width, typename overwrite, int scaleX, typename InternalNoiseType, typename GeneratedNoiseType>
         constexpr void fillLine(int internalX, int fillStartX, const InternalNoiseType& internalNoiseMap,
             GeneratedNoiseType& generatedNoiseMap, const Stealth::Tensor::Tensor3F<scaleX>& attenuationsX, float multiplier = 1.0f) {
@@ -64,7 +64,7 @@ namespace StealthNoiseGenerator {
         return generatedNoiseMap;
     }
 
-    // Return a normalization factor
+    // Return a normalization factor and generate the noisemap in-place.
     template <int width, int scaleX, int numOctaves = 6, typename Distribution, typename GeneratedNoiseType>
     constexpr float generateOctaves1D_impl(GeneratedNoiseType& generatedNoiseMap, long seed,
         Distribution&& distribution, float decayFactor, float accumulator = 1.0f) {

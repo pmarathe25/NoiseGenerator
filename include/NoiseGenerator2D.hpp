@@ -19,7 +19,7 @@ namespace StealthNoiseGenerator {
             return nxy;
         }
 
-        // Interpolate a square section among 4 corners. 
+        // Interpolate a square section among 4 corners.
         template <int width, int length, typename overwrite, int scaleX, int scaleY,
             typename InternalNoiseType, typename GeneratedNoiseType>
         constexpr void fillSquare(int internalX, int internalY, int fillStartX, int fillStartY,
@@ -104,7 +104,7 @@ namespace StealthNoiseGenerator {
         return generatedNoiseMap;
     }
 
-    // Return a normalization factor
+    // Return a normalization factor and generate the noisemap in-place.
     template <int width, int length, int scaleX, int scaleY, int numOctaves = 6, typename Distribution, typename GeneratedNoiseType>
     constexpr float generateOctaves2D_impl(GeneratedNoiseType& generatedNoiseMap, long seed,
         Distribution&& distribution, float decayFactor, float accumulator = 1.0f) {
