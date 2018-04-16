@@ -3,6 +3,7 @@
 #include "InternalCaches.hpp"
 #include <Stealth/Tensor3>
 #include <Stealth/util>
+#include <Stealth/time>
 #include <random>
 
 namespace StealthNoiseGenerator {
@@ -13,6 +14,7 @@ namespace StealthNoiseGenerator {
             return nx;
         }
 
+        // Interpolate a line between 2 points. 
         template <int width, typename overwrite, int scaleX, typename InternalNoiseType, typename GeneratedNoiseType>
         constexpr void fillLine(int internalX, int fillStartX, const InternalNoiseType& internalNoiseMap,
             GeneratedNoiseType& generatedNoiseMap, const Stealth::Tensor::Tensor3F<scaleX>& attenuationsX, float multiplier = 1.0f) {

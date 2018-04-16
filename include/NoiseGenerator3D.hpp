@@ -4,6 +4,7 @@
 #include "InternalCaches.hpp"
 #include <Stealth/Tensor3>
 #include <Stealth/util>
+#include <Stealth/time>
 #include <random>
 
 namespace StealthNoiseGenerator {
@@ -19,6 +20,7 @@ namespace StealthNoiseGenerator {
             return nxyz;
         }
 
+        // Interpolate a cubic section among 8 corners. 
         template <int width, int length, int height, typename overwrite, int scaleX,
             int scaleY, int scaleZ, typename InternalNoiseType, typename GeneratedNoiseType>
         constexpr void fillCube(int internalX, int internalY, int internalZ, int fillStartX, int fillStartY, int fillStartZ,

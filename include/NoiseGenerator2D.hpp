@@ -4,6 +4,7 @@
 #include "InternalCaches.hpp"
 #include <Stealth/Tensor3>
 #include <Stealth/util>
+#include <Stealth/time>
 #include <random>
 
 namespace StealthNoiseGenerator {
@@ -18,6 +19,7 @@ namespace StealthNoiseGenerator {
             return nxy;
         }
 
+        // Interpolate a square section among 4 corners. 
         template <int width, int length, typename overwrite, int scaleX, int scaleY,
             typename InternalNoiseType, typename GeneratedNoiseType>
         constexpr void fillSquare(int internalX, int internalY, int fillStartX, int fillStartY,
