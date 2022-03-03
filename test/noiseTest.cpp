@@ -1,6 +1,7 @@
-#include <Stealth/NoiseGenerator>
-#include <Stealth/Color>
-#include <Stealth/util>
+#include "interfaces/NoiseGenerator"
+#include <Color>
+#include <chrono>
+#include <thread>
 #include <SFML/Window.hpp>
 #include <SFML/Graphics.hpp>
 #include <functional>
@@ -8,15 +9,15 @@
 
 using StealthColor::Color, StealthColor::applyPalette, StealthColor::GradientColorPalette;
 
-constexpr int WINDOW_X = 800;
-constexpr int WINDOW_Y = 800;
-constexpr int NUM_LAYERS = 1;
-constexpr int FRAMERATE = 0;
+constexpr int WINDOW_X = 500;
+constexpr int WINDOW_Y = 500;
+constexpr int NUM_LAYERS = 96;
+constexpr int FRAMERATE = 24;
 
 const GradientColorPalette noisePalette{Color(0, 0, 0), Color(255, 255, 255)};
 
 template <typename TileMapType>
-constexpr sf::Sprite spriteFromColorMap(const TileMapType& colors, sf::Texture& texture) {
+sf::Sprite spriteFromColorMap(const TileMapType& colors, sf::Texture& texture) {
     sf::Image im;
     sf::Sprite sprite;
     im.create(colors.width(), colors.length(), (uint8_t*) colors.data());
@@ -31,25 +32,14 @@ int main() {
 
     long long totalTime = 0;
     int numFrames = 0;
+    long seed = 0;
 
-    // float smoothness = 0.0f;
-
-    Stealth::Tensor::Tensor3F<WINDOW_X, WINDOW_Y, NUM_LAYERS> noise{};
     while (window.isOpen()) {
         auto start = std::chrono::steady_clock::now();
 
-        // Stealth::Noise::generateOctaves<WINDOW_X, WINDOW_Y, NUM_LAYERS, 200, 200, 100, 1>(noise,
-        //     std::normal_distribution{0.5f, 1 / 6.0f}, Stealth::getCurrentTime());
-        Stealth::Noise::generateOctaves<WINDOW_X, WINDOW_Y, NUM_LAYERS, 200, 200, 100, 8>(noise,
-            std::normal_distribution{0.5f, 1 / 6.0f}, Stealth::getCurrentTime());
-        // Stealth::Noise::generateOctaves<WINDOW_X, WINDOW_Y, NUM_LAYERS, 200, 200, 100, 12>(noise,
-        //     std::uniform_real_distribution{0.0f, 1.0f}, Stealth::getCurrentTime());
-        // Stealth::Noise::generateOctaves<WINDOW_X, WINDOW_Y, 200, 200, 12>(noise,
-        //     std::normal_distribution{0.5f, 1 / 6.0f}, Stealth::getCurrentTime(), 0.5f);
-        // Stealth::Noise::generateOctaves<WINDOW_X, WINDOW_Y, 200, 200, 12>(noise,
-        //     std::uniform_real_distribution{0.0f, 1.0f}, Stealth::getCurrentTime(), 0.5f);
-        // Stealth::Noise::generateOctaves<WINDOW_X, 200, 8>(noise,
-        //     std::normal_distribution{0.5f, 1 / 6.0f}, Stealth::getCurrentTime(), 0.5f);
+        Stealth::Tensor::Tensor3F<WINDOW_X, WINDOW_Y, NUM_LAYERS> noise{};
+        Stealth::Noise::generateOctaves<WINDOW_X, WINDOW_Y, NUM_LAYERS, WINDOW_X, WINDOW_Y, NUM_LAYERS, 8>(noise,
+            std::normal_distribution{0.5f, 0.3f}, seed++);
 
         auto end = std::chrono::steady_clock::now();
         totalTime += std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
@@ -71,7 +61,15 @@ int main() {
                     window.close();
                 }
             }
-            if constexpr (FRAMERATE > 0) Stealth::sleepMS((long) 1000.0f / FRAMERATE - std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count());
+            if constexpr (FRAMERATE > 0)
+            {
+                std::this_thread::sleep_for(
+                    std::chrono::milliseconds(
+                        (long) 1000.0f / FRAMERATE
+                    )
+                );
+
+            } 
         }
     }
     std::cout << std::endl;
